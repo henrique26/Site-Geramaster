@@ -26,6 +26,18 @@
       </form>
     </div>
   </div>
+<link rel="manifest" href="/static/manifest.json">
+<link rel="icon" href="/static/icons/icon-192.png">
+<meta name="theme-color" content="#0d6efd">
+
+<!-- Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js')
+      .then(reg => console.log('Service Worker registrado!', reg))
+      .catch(err => console.error('Erro ao registrar SW:', err));
+  }
+</script>
 
 </body>
 </html>
