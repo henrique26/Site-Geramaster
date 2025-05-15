@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h2 class="text-center mb-4">Geramaster App</h2>
+    <div class="container">
+        <h1 class="my-4">RDV - Registro de Valores</h1>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br>
+        <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
+
+        <!-- Formulário RDV -->
+        <form method="POST" class="mb-3">
+            <div class="mb-3">
+                <label for="valor" class="form-label">Valor</label>
+                <input type="text" name="valor" id="valor" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="descricao" class="form-label">Descrição</label>
+                <input type="text" name="descricao" id="descricao" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="data" class="form-label">Data</label>
+                <input type="date" name="data" id="data" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar RDV</button>
+        </form>
+            {% if tipo == 'admin' %}
+    <form method="get" style="margin-bottom: 20px;">
+        <label for="filtro_data">Data:</label>
+        <input type="date" name="filtro_data" id="filtro_data" value="{{ filtro_data }}">
+
+        <label for="filtro_usuario">Técnico:</label>
+        <select name="filtro_usuario" id="filtro_usuario">
+            <option value="">Todos</option>
+            {% for tecnico in tecnicos %}
+                <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+{% endif %}
+
+
+        <h3>Histórico de RDVs</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    {% if is_admin %}
+                    <th>Nome do Técnico</th>
+                    {% endif %}
+                    <th>Valor</th>
+                    <th>Descrição</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rdv in rdvs %}
+                <tr>
+                    {% if is_admin %}
+                    <td>{{ rdv[1] }}</td>
+                    {% endif %}
+                    <td>{{ rdv[2] }}</td>
+                    <td>{{ rdv[3] }}</td>
+                    <td>{{ rdv[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+<style>
+.btn-voltar {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 8px 15px;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.btn-voltar:hover {
+    background-color: #0056b3;
+}
+</style>
