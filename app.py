@@ -1,15 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
+import pytz
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'segredo'
 
+fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+agora = datetime.now(fuso_brasilia)
+
 # Inicializa o banco
 def init_db():
     with sqlite3.connect('banco.db') as conn:
         cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios ( 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             usuario TEXT UNIQUE NOT NULL,
             senha TEXT NOT NULL,
@@ -143,8 +147,10 @@ def dashboard():
 
         if acao == 'registrar_agora':
             tipo = request.form['tipo_registro']
-            data = datetime.now().strftime('%Y-%m-%d')
-            hora = datetime.now().strftime('%H:%M:%S')
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            agora = datetime.now(fuso_brasilia)
+            hora = agora.strftime('%H:%M:%S')
+            data = agora.strftime('%Y-%m-%d')
         elif acao == 'registrar_manual':
             tipo = request.form['tipo_registro_manual']
             data = request.form['data']
