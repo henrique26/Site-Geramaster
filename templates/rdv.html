@@ -29,49 +29,93 @@
             </div>
             <button type="submit" class="btn btn-primary">Registrar RDV</button>
         </form>
-            {% if tipo == 'admin' %}
-    <form method="get" style="margin-bottom: 20px;">
-        <label for="filtro_data">Data:</label>
-        <input type="date" name="filtro_data" id="filtro_data" value="{{ filtro_data }}">
 
-        <label for="filtro_usuario">Técnico:</label>
-        <select name="filtro_usuario" id="filtro_usuario">
-            <option value="">Todos</option>
-            {% for tecnico in tecnicos %}
-                <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Filtrar</button>
-    </form>
-{% endif %}
-
+        {% if tipo == 'admin' or tipo == 'tecnico' %}
+        <form method="get" style="margin-bottom: 20px;">
+            <div class="mb-3">
+                <label for="filtro_data">Data:</label>
+                <input type="date" name="filtro_data" id="filtro_data" class="form-control" value="{{ filtro_data }}">
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <label for="data_inicio" class="form-label">Data início:</label>
+                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label for="data_fim" class="form-label">Data fim:</label>
+                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="filtro_usuario">Técnico:</label>
+                <select name="filtro_usuario" class="form-control" id="filtro_usuario">
+                    <option value="">Todos</option>
+                    {% for tecnico in tecnicos %}
+                        <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+        </form>
+        {% endif %}
 
         <h3>Histórico de RDVs</h3>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    {% if is_admin %}
-                    <th>Nome do Técnico</th>
-                    {% endif %}
-                    <th>Valor</th>
-                    <th>Descrição</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for rdv in rdvs %}
-                <tr>
-                    {% if is_admin %}
-                    <td>{{ rdv[1] }}</td>
-                    {% endif %}
-                    <td>{{ rdv[2] }}</td>
-                    <td>{{ rdv[3] }}</td>
-                    <td>{{ rdv[4] }}</td>
-                </tr>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            {% if is_admin %}
+                <th>Nome do Técnico</th>
+            {% endif %}
+            <th>Valor</th>
+            <th>Descrição</th>
+            <th>Data</th>
+            <th>Ação</th> <!-- Coluna para o botão excluir -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for rdv in rdvs %}
+        <tr>
+            {% if is_admin %}
+                <td>{{ rdv[1] }}</td>
+            {% endif %}
+            <td>R$ {{ "%.2f"|format(rdv[2]|float) }}</td>
+
+            <td>{{ rdv[3] }}</td>
+            <td>{{ rdv[4] }}</td>
+            <td>
+                {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
+                <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+        <!-- SALDO -->
+<div class="container my-4">
+    {% if is_admin %}
+        <h3>Saldos dos Técnicos</h3>
+        {% if saldos %}
+            <ul class="list-group">
+                {% for tecnico, saldo in saldos.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ tecnico }}
+                        <span>R$ {{ '%.2f'|format(saldo) }}</span>
+                    </li>
                 {% endfor %}
-            </tbody>
-        </table>
+            </ul>
+        {% else %}
+            <p>Nenhum saldo disponível.</p>
+        {% endif %}
+    {% else %}
+        <h3>Seu saldo</h3>
+        <p>R$ {{ '%.2f'|format(saldo) }}</p>
+    {% endif %}
+</div>
+
     </div>
 </body>
 </html>
