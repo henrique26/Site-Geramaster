@@ -1,15 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
+import pytz
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'segredo'
 
+fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+agora = datetime.now(fuso_brasilia)
+
 # Inicializa o banco
 def init_db():
     with sqlite3.connect('banco.db') as conn:
         cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios ( 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             usuario TEXT UNIQUE NOT NULL,
             senha TEXT NOT NULL,
@@ -37,7 +41,9 @@ def init_db():
             ('henrique', 'henrique1234', 'tecnico'),
             ('euler', 'euler1234', 'tecnico'),
             ('alexon', 'alexon1234', 'tecnico'),
-            ('carlos', 'carlos1234', 'tecnico')
+            ('carlos', 'carlos1234', 'tecnico'),
+            ('ivan', 'ivan1234', 'admin'),
+            ('wallace', 'wallace1234', 'admin')
         ]
 
         for usuario, senha, tipo in usuarios:
@@ -93,6 +99,8 @@ def rdv():
     # Filtros
     filtro_usuario = request.args.get('filtro_usuario', '')
     filtro_data = request.args.get('filtro_data', '')
+    filtro_data_inicio = request.args.get('filtro_data_inicio', '')
+    filtro_data_fim = request.args.get('filtro_data_fim', '')
 
     with sqlite3.connect('banco.db') as conn:
         cursor = conn.cursor()
@@ -104,7 +112,12 @@ def rdv():
             if filtro_usuario:
                 query += " AND usuario = ?"
                 params.append(filtro_usuario)
-            if filtro_data:
+
+            if filtro_data_inicio and filtro_data_fim:
+                query += " AND data BETWEEN ? AND ?"
+                params.append(filtro_data_inicio)
+                params.append(filtro_data_fim)
+            elif filtro_data:
                 query += " AND data = ?"
                 params.append(filtro_data)
 
@@ -118,16 +131,26 @@ def rdv():
         else:
             query = "SELECT * FROM rdvs WHERE usuario = ?"
             params = [usuario]
-            if filtro_data:
+
+            if filtro_data_inicio and filtro_data_fim:
+                query += " AND data BETWEEN ? AND ?"
+                params.append(filtro_data_inicio)
+                params.append(filtro_data_fim)
+            elif filtro_data:
                 query += " AND data = ?"
                 params.append(filtro_data)
+
             query += " ORDER BY data DESC"
             cursor.execute(query, params)
             rdvs = cursor.fetchall()
             tecnicos = []
 
     return render_template('rdv.html', rdvs=rdvs, tipo=tipo_usuario,
-                           tecnicos=tecnicos, filtro_usuario=filtro_usuario, filtro_data=filtro_data)
+                           tecnicos=tecnicos, filtro_usuario=filtro_usuario,
+                           filtro_data=filtro_data, filtro_data_inicio=filtro_data_inicio,
+                           filtro_data_fim=filtro_data_fim)
+
+
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -143,8 +166,10 @@ def dashboard():
 
         if acao == 'registrar_agora':
             tipo = request.form['tipo_registro']
-            data = datetime.now().strftime('%Y-%m-%d')
-            hora = datetime.now().strftime('%H:%M:%S')
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            agora = datetime.now(fuso_brasilia)
+            hora = agora.strftime('%H:%M:%S')
+            data = agora.strftime('%Y-%m-%d')
         elif acao == 'registrar_manual':
             tipo = request.form['tipo_registro_manual']
             data = request.form['data']
@@ -160,6 +185,8 @@ def dashboard():
         return redirect(url_for('dashboard'))
 
     filtro_data = request.args.get('filtro_data', '')
+    filtro_data_inicio = request.args.get('filtro_data_inicio', '')
+    filtro_data_fim = request.args.get('filtro_data_fim', '')
     filtro_usuario = request.args.get('filtro_usuario', '')
 
     registros = []
@@ -169,7 +196,12 @@ def dashboard():
             query = "SELECT usuario, tipo_registro, data, hora, id FROM registros WHERE 1=1"
             params = []
 
-            if filtro_data:
+            if filtro_data_inicio and filtro_data_fim:
+                query += " AND data BETWEEN ? AND ?"
+                params.append(filtro_data_inicio)
+                params.append(filtro_data_fim)
+
+            elif filtro_data:
                 query += " AND data = ?"
                 params.append(filtro_data)
 
@@ -183,14 +215,21 @@ def dashboard():
         else:
             query = "SELECT tipo_registro, data, hora, id FROM registros WHERE usuario = ?"
             params = [usuario]
-            if filtro_data:
+            if filtro_data_inicio and filtro_data_fim:
+                query += " AND data BETWEEN ? AND ?"
+                params.append(filtro_data_inicio)
+                params.append(filtro_data_fim)
+            elif filtro_data:
                 query += " AND data = ?"
                 params.append(filtro_data)
             query += " ORDER BY data DESC, hora DESC"
             cursor.execute(query, params)
             registros = cursor.fetchall()
 
-    return render_template('dashboard.html', usuario=usuario, tipo=tipo_usuario, registros=registros)
+    return render_template('dashboard.html', usuario=usuario, tipo=tipo_usuario, registros=registros,
+                           filtro_data=filtro_data, filtro_data_inicio=filtro_data_inicio,
+                           filtro_data_fim=filtro_data_fim, filtro_usuario=filtro_usuario)
+
 
 @app.route('/admin', methods=['GET'])
 def admin_dashboard():

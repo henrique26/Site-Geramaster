@@ -29,20 +29,34 @@
             </div>
             <button type="submit" class="btn btn-primary">Registrar RDV</button>
         </form>
-            {% if tipo == 'admin' %}
+            {% if tipo == 'admin', 'tecnico' %}
     <form method="get" style="margin-bottom: 20px;">
+        <div class="mb-3">
         <label for="filtro_data">Data:</label>
-        <input type="date" name="filtro_data" id="filtro_data" value="{{ filtro_data }}">
-
+        <input type="date" name="filtro_data" id="filtro_data" class="form-control" value="{{ filtro_data }}">
+        </div>
+        <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <label for="data_inicio" class="form-label">Data início:</label>
+                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label for="data_fim" class="form-label">Data fim:</label>
+                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control">
+                </div>
+                <div class="mb-3">
         <label for="filtro_usuario">Técnico:</label>
-        <select name="filtro_usuario" id="filtro_usuario">
+        <select name="filtro_usuario" class="form-control" id="filtro_usuario"><br>
+
             <option value="">Todos</option>
+        </div>
             {% for tecnico in tecnicos %}
                 <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
             {% endfor %}
         </select>
 
         <button type="submit">Filtrar</button>
+        
     </form>
 {% endif %}
 
