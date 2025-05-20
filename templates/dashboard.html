@@ -2,58 +2,69 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <h2 class="text-center mb-4">Geramaster App</h2>
-<div class="container">
-    <h1 class="my-4">Bem-vindo, {{ usuario }}</h1>
-    <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a>
-    <br>
-    <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
-    
+    <div class="container">
+        <h1 class="my-4">Bem-vindo, {{ usuario }}</h1>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br>
+        <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
 
+        <h3>Registrar Horário</h3>
 
-    <h3>Registrar Horário</h3>
+        <!-- Registro imediato -->
+        <form method="POST" class="mb-3">
+            <input type="hidden" name="acao" value="registrar_agora">
+            <select name="tipo_registro" required class="form-select mb-2">
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+            </select>
+            <button type="submit" class="btn btn-success w-100">Registrar Agora</button>
+        </form>
 
-    <!-- Registro imediato -->
-    <form method="POST" class="mb-3">
-        <input type="hidden" name="acao" value="registrar_agora">
-        <select name="tipo_registro" required class="form-select mb-2">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-        </select>
-        <button type="submit" class="btn btn-success">Registrar Agora</button>
-    </form>
+        <!-- Registro manual -->
+        <form method="POST" class="mb-3">
+            <input type="hidden" name="acao" value="registrar_manual">
+            <select name="tipo_registro_manual" required class="form-select mb-2">
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+            </select>
+            <input type="date" name="data" required class="form-control mb-2">
+            <input type="time" name="hora" required class="form-control mb-2">
+            <button type="submit" class="btn btn-warning w-100">Registrar Manualmente</button>
+        </form>
 
-    <!-- Registro manual -->
-    <form method="POST" class="mb-3">
-        <input type="hidden" name="acao" value="registrar_manual">
-        <select name="tipo_registro_manual" required class="form-select mb-2">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-        </select>
-        <input type="date" name="data" required class="form-control mb-2">
-        <input type="time" name="hora" required class="form-control mb-2">
-        <button type="submit" class="btn btn-warning">Registrar Manualmente</button>
-    </form>
+        <h3>Histórico de Registros</h3>
 
-    <h3>Histórico de Registros</h3>
+        <!-- Filtro de registros -->
+        <form method="GET" class="mb-4">
+            <input type="date" name="filtro_data" class="form-control mb-2" placeholder="Filtrar por data">
 
-    <form method="GET" class="mb-3">
-    <input type="date" name="filtro_data" class="form-control mb-2" placeholder="Filtrar por data">
-    
-    {% if tipo == 'admin' %}
-    <input type="text" name="filtro_usuario" class="form-control mb-2" placeholder="Filtrar por técnico">
-    {% endif %}
-    
-    <button type="submit" class="btn btn-info">Filtrar</button>
-</form>
+            {% if tipo == 'admin', 'tecnico' %}
+            <input type="text" name="filtro_usuario" class="form-control mb-2" placeholder="Filtrar por técnico">
+            {% endif %}
 
+            <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <label for="data_inicio" class="form-label">Data início:</label>
+                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label for="data_fim" class="form-label">Data fim:</label>
+                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control">
+                </div>
+                
+            </div>
 
-    <table class="table table-bordered">
-        <thead>
+            <button type="submit" class="btn btn-info w-100">Filtrar</button>
+        </form>
+
+        <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
             <tr>
                 {% if tipo == 'admin' %}
                 <th>Técnico</th>
@@ -63,47 +74,54 @@
                 <th>Hora</th>
                 <th>Ação</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for r in registros %}
             <tr>
                 {% if tipo == 'admin' %}
-                <td>{{ r[0] }}</td>  <!-- nome técnico -->
+                <td>{{ r[1] }}</td>  {# usuário/técnico #}
                 <td>
-                    {% if r[1] == 'entrada' %}
-                        Entrada
-                    {% elif r[1] == 'saida' %}
-                        Saída
+                    {% if r[2] == 'entrada' %}
+                    Entrada
+                    {% elif r[2] == 'saida' %}
+                    Saída
                     {% else %}
-                        {{ r[1] }}
+                    {{ r[2] }}
                     {% endif %}
                 </td>
-                <td>{{ r[2] }}</td>
                 <td>{{ r[3] }}</td>
+                <td>{{ r[4] }}</td>
                 <td>
-                    <a href="{{ url_for('excluir_registro', id=r[4]) }}" class="btn btn-danger btn-sm">Excluir</a>
+                    <form action="{{ url_for('excluir_registro', id=r[0]) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
                 </td>
                 {% else %}
                 <td>
-                    {% if r[0] == 'entrada' %}
-                        Entrada
-                    {% elif r[0] == 'saida' %}
-                        Saída
+                    {% if r[2] == 'entrada' %}
+                    Entrada
+                    {% elif r[2] == 'saida' %}
+                    Saída
                     {% else %}
-                        {{ r[0] }}
+                    {{ r[2] }}
                     {% endif %}
                 </td>
-                <td>{{ r[1] }}</td>
-                <td>{{ r[2] }}</td>
+                <td>{{ r[3] }}</td>
+                <td>{{ r[4] }}</td>
                 <td>
-                    <a href="{{ url_for('excluir_registro', id=r[3]) }}" class="btn btn-danger btn-sm">Excluir</a>
+                    <form action="{{ url_for('excluir_registro', id=r[0]) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
                 </td>
                 {% endif %}
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </tbody>
+
+        </table>
+        </div>
+
+    </div>
 </body>
 </html>
 
