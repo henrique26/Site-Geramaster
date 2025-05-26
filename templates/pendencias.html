@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <h2 class="text-center mb-4">Geramaster App</h2>
+    <div class="container">
+        <a href="{{ url_for('logout') }}" class="btn btn-danger mb-3">Sair</a><bR>
+        <a href="{{ url_for('menu') }}" class="btn btn-primary">Voltar para Menu</a><br>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f7f7f7;
+        }
+        h1 {
+            color: #222;
+        }
+        form, table {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table thead tr {
+            background: #007bff;
+            color: white;
+        }
+        table th, table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        table tr:hover {
+            background: #f1f1f1;
+        }
+        input[type="text"], input[type="date"] {
+            padding: 6px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-right: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.excluir {
+            background: #dc3545;
+        }
+        button.excluir:hover {
+            background: #a71d2a;
+        }
+        .filtros {
+            margin-bottom: 15px;
+        }
+        .filtros input {
+            margin-right: 8px;
+        }
+        .status-pendente {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .status-resolvida {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pendências de OS</h1>
+
+    <!-- FILTROS -->
+    <form method="GET" class="filtros">
+        <input type="text" name="numero_os" placeholder="Número da OS" value="{{ filtro_os }}" />
+        <input type="text" name="cliente" placeholder="Cliente" value="{{ filtro_cliente }}" />
+        <input type="date" name="data" value="{{ filtro_data }}" />
+        <button type="submit">Filtrar</button>
+        <a href="{{ url_for('pendencias') }}" style="margin-left:10px;">Limpar filtros</a>
+    </form>
+
+    <!-- LISTA DE PENDÊNCIAS -->
+    <table>
+        <thead>
+            <tr>
+                <th>OS</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Pendência</th>
+                <th>Status</th>
+                <th>Criado por</th>
+                <th>Concluído por</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pendencias %}
+            <tr>
+                <td>{{ p[1] }}</td>
+                <td>{{ p[2].strftime('%d/%m/%Y') }}</td>
+                <td>{{ p[3] }}</td>
+                <td>{{ p[4] }}</td>
+                <td>
+                    {% if p[5] == 'Pendente' %}
+                        <span class="status-pendente">{{ p[5] }}</span>
+                    {% else %}
+                        <span class="status-resolvida">{{ p[5] }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ p[6] }}</td>
+                <td>{{ p[7] if p[7] else '' }}</td>
+
+                <td>
+                    {% if p[5] == 'Pendente' %}
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="acao" value="resolver" />
+                        <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                        <button type="submit">✔️</button>
+                    </form>
+                    {% endif %}
+
+                    {% if tipo == 'admin' or p[6] == usuario %}
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Quer mesmo excluir?');">
+                        <input type="hidden" name="acao" value="excluir" />
+                        <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                        <button type="submit" class="excluir">🗑️</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align:center;">Nenhuma pendência encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- FORMULÁRIO DE NOVA PENDÊNCIA -->
+    <h2>Adicionar Pendência</h2>
+    <form method="POST">
+        <input type="hidden" name="acao" value="adicionar" />
+        <input type="text" name="numero_os" placeholder="Número da OS" required />
+        <input type="date" name="data" required />
+        <input type="text" name="cliente" placeholder="Cliente" required />
+        <input type="text" name="pendencia" placeholder="Descrição da Pendência" required style="width: 300px;" />
+        <button type="submit">Adicionar</button>
+    </form>
+</body>
+</html>
