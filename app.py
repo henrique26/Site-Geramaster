@@ -3,6 +3,10 @@ import pytz
 from datetime import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor  # opcional para fetch como dict
+from flask import send_file
+from fpdf import FPDF
+import io
+from collections import Counter
 
 def get_connection():
     return psycopg2.connect(
@@ -184,6 +188,8 @@ def rdv():
                     saldo = float(total_depositos) - float(total_rdvs)
                     saldos[tecnico] = saldo
 
+                ultimo_deposito = None  # Admin não vê último depósito
+
             else:
                 query = "SELECT * FROM rdvs WHERE usuario = %s"
                 params = [usuario]
@@ -209,12 +215,24 @@ def rdv():
                 saldo = float(total_depositos) - float(total_rdvs)
                 saldos = {}
 
+                # CONSULTA DO ÚLTIMO DEPÓSITO AQUI
+                cursor.execute(
+                    "SELECT valor, data FROM depositos WHERE usuario = %s ORDER BY data DESC LIMIT 1", (usuario,)
+                )
+                result = cursor.fetchone()
+                if result:
+                    ultimo_deposito = {'valor': float(result[0]), 'data': result[1]}
+                else:
+                    ultimo_deposito = None
+
     return render_template('rdv.html', rdvs=rdvs, tipo=tipo_usuario, usuario=usuario,
                            tecnicos=tecnicos, filtro_usuario=filtro_usuario,
                            filtro_data=filtro_data, filtro_data_inicio=filtro_data_inicio,
                            filtro_data_fim=filtro_data_fim, is_admin=(tipo_usuario == 'admin'),
                            saldo=saldo if tipo_usuario != 'admin' else None,
-                           saldos=saldos if tipo_usuario == 'admin' else {})
+                           saldos=saldos if tipo_usuario == 'admin' else {},
+                           ultimo_deposito=ultimo_deposito)
+
 
 @app.route('/deposito', methods=['GET', 'POST'])
 def deposito():
@@ -263,6 +281,136 @@ def delete_rdv(rdv_id):
             conn.commit()
     return redirect(url_for('rdv'))  # Altere 'rdv' para o nome da sua rota que lista os RDVs
 
+from flask import request
+
+@app.route('/exportar_pdf')
+def exportar_pdf():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    tipo_usuario = session.get('tipo')
+
+    filtro_data_inicio = request.args.get('filtro_data_inicio')
+    filtro_data_fim = request.args.get('filtro_data_fim')
+    filtro_usuario = request.args.get('filtro_usuario') if tipo_usuario == 'admin' else usuario
+
+    query = "SELECT * FROM registros WHERE 1=1"
+    params = []
+
+    if tipo_usuario != 'admin':
+        query += " AND usuario = %s"
+        params.append(usuario)
+    else:
+        if filtro_usuario:
+            query += " AND usuario = %s"
+            params.append(filtro_usuario)
+
+    if filtro_data_inicio:
+        query += " AND data >= %s"
+        params.append(filtro_data_inicio)
+    if filtro_data_fim:
+        query += " AND data <= %s"
+        params.append(filtro_data_fim)
+
+    query += " ORDER BY data ASC, hora ASC"
+
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, tuple(params))
+            registros = cursor.fetchall()
+
+    datas = [r[3] for r in registros if r[3]]
+    if datas:
+        try:
+            datas_convertidas = [datetime.strptime(d, '%Y-%m-%d') if isinstance(d, str) else d for d in datas]
+        except Exception:
+            datas_convertidas = datas
+
+        datas_str = [d.strftime('%Y-%m-%d') for d in datas_convertidas]
+        contagem = Counter(datas_str)
+        data_mais_comum = contagem.most_common(1)[0][0]
+        dt = datetime.strptime(data_mais_comum, '%Y-%m-%d')
+        mes_ano = dt.strftime('%m/%Y')
+    else:
+        mes_ano = "Data Indisponível"
+
+    if tipo_usuario == 'admin':
+        titulo = f"Folha de ponto - {mes_ano}"
+    else:
+        titulo = f"{usuario} - Folha de ponto - {mes_ano}"
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.image('static/Geramaster logo Preto fundo transparente.png', 10, 8, 44)
+    pdf.cell(0, 10, titulo, 0, 1, 'C')
+    pdf.ln(1)
+
+    # Aqui mostramos o nome do técnico no topo da tabela, se for admin e filtro setado
+    pdf.set_font("Arial", "B", 14)
+    if tipo_usuario == 'admin':
+        if filtro_usuario:
+            nome_tec_exibir = filtro_usuario
+        else:
+            nome_tec_exibir = "Todos os Técnicos"
+    else:
+        nome_tec_exibir = usuario
+
+    pdf.cell(0, 10, f"Técnico: {nome_tec_exibir}", 0, 1, 'L')
+    pdf.ln(2)
+
+    # Cabeçalho da tabela, sem "Técnico" na coluna
+    headers = ["Data", "Entrada", "Entrada Almoço", "Retorno Almoço", "Saída"]
+    col_widths = [40, 25, 40, 40, 25]
+
+    pdf.set_font("Arial", "B", 12)
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, header, 1, 0, 'C')
+    pdf.ln()
+
+    # Organizando dados para mostrar no PDF
+    data_dict = {}
+    for r in registros:
+        key = (r[1], r[3])  # (usuario, data)
+        if key not in data_dict:
+            data_dict[key] = {'entrada': '', 'saida': '', 'entrada_almoco': '12:00', 'retorno_almoco': '13:12'}
+        if r[2] == 'entrada':
+            data_dict[key]['entrada'] = r[4]
+        elif r[2] == 'saida':
+            data_dict[key]['saida'] = r[4]
+
+    pdf.set_font("Arial", "", 12)
+    for (tec, data), times in data_dict.items():
+        if isinstance(data, str):
+            data_obj = datetime.strptime(data, '%Y-%m-%d')
+        else:
+            data_obj = data
+
+        dias_semana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
+        dia_semana_str = dias_semana[data_obj.weekday()]
+        data_formatada = f"{dia_semana_str} - {data_obj.strftime('%d/%m/%Y')}"
+
+        pdf.cell(col_widths[0], 10, data_formatada, 1)
+        pdf.cell(col_widths[1], 10, times['entrada'], 1)
+        pdf.cell(col_widths[2], 10, times['entrada_almoco'], 1)
+        pdf.cell(col_widths[3], 10, times['retorno_almoco'], 1)
+        pdf.cell(col_widths[4], 10, times['saida'], 1)
+        pdf.ln()
+
+
+    pdf.ln(4)
+    pdf.cell(0, 10, 'Assinatura do Técnico: ________________________________', 0, 1)
+
+    pdf_output = io.BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+
+    return send_file(pdf_output, download_name='folha_de_ponto.pdf', as_attachment=True, mimetype='application/pdf')
+
+
+
+
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -289,8 +437,10 @@ def dashboard():
 
         with get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("INSERT INTO registros (usuario, tipo_registro, data, hora) VALUES (%s, %s, %s, %s)",
-                               (usuario, tipo, data, hora))
+                cursor.execute(
+                    "INSERT INTO registros (usuario, tipo_registro, data, hora) VALUES (%s, %s, %s, %s)",
+                    (usuario, tipo, data, hora)
+                )
                 conn.commit()
         return redirect(url_for('dashboard'))
 
@@ -317,7 +467,7 @@ def dashboard():
                     query += " AND data = %s"
                     params.append(filtro_data)
 
-                query += " ORDER BY data ASC, hora ASC"
+                query += " ORDER BY usuario ASC, data ASC, hora ASC"
                 cursor.execute(query, params)
                 registros = cursor.fetchall()
 
@@ -341,10 +491,45 @@ def dashboard():
                 registros = cursor.fetchall()
                 tecnicos = []
 
-    return render_template('dashboard.html', registros=registros, usuario=usuario, tipo=tipo_usuario,
-                           tecnicos=tecnicos, filtro_usuario=filtro_usuario, filtro_data=filtro_data,
-                           filtro_data_inicio=filtro_data_inicio, filtro_data_fim=filtro_data_fim,
-                           is_admin=(tipo_usuario == 'admin'))
+            # Agora vamos agrupar registros por (usuario, data)
+            registros_agrupados = {}
+
+            for r in registros:
+                id_registro = r[0]
+                usuario_registro = r[1]
+                tipo_registro = r[2]
+                data = r[3]
+                hora = r[4]
+
+                key = (usuario_registro, data)
+
+                if key not in registros_agrupados:
+                    registros_agrupados[key] = {
+                        'entrada': None,
+                        'entrada_almoco': {'id': None, 'hora': '12:00'},
+                        'retorno_almoco': {'id': None, 'hora': '13:12'},
+                        'saida': None
+                    }
+
+                if tipo_registro == 'entrada':
+                    registros_agrupados[key]['entrada'] = {'id': id_registro, 'hora': hora}
+                elif tipo_registro == 'saida':
+                    registros_agrupados[key]['saida'] = {'id': id_registro, 'hora': hora}
+
+    return render_template(
+        'dashboard.html',
+        registros_agrupados=registros_agrupados,
+        registros=registros,
+        usuario=usuario,
+        tipo=tipo_usuario,
+        tecnicos=tecnicos,
+        filtro_usuario=filtro_usuario,
+        filtro_data=filtro_data,
+        filtro_data_inicio=filtro_data_inicio,
+        filtro_data_fim=filtro_data_fim,
+        is_admin=(tipo_usuario == 'admin')
+    )
+
 
 @app.route('/excluir/<int:id>', methods=['POST'])
 def excluir_registro(id):
@@ -357,6 +542,31 @@ def excluir_registro(id):
             conn.commit()
 
     return redirect(url_for('dashboard'))
+
+@app.route('/excluir_dia/<data>', methods=['POST'])
+def excluir_dia(data):
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+
+    usuario = session['usuario']
+    tipo_usuario = session.get('tipo')
+
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            if tipo_usuario == 'admin':
+                # Se for admin, pode escolher usuário pela query string (exemplo)
+                filtro_usuario = request.args.get('usuario')
+                if filtro_usuario:
+                    cursor.execute("DELETE FROM registros WHERE usuario = %s AND data = %s", (filtro_usuario, data))
+                else:
+                    # Se admin não passou usuário, evita apagar geral
+                    return redirect(url_for('dashboard'))
+            else:
+                # Técnico só apaga dele mesmo
+                cursor.execute("DELETE FROM registros WHERE usuario = %s AND data = %s", (usuario, data))
+            conn.commit()
+    return redirect(url_for('dashboard'))
+
     
 @app.route('/pendencias', methods=['GET', 'POST'])
 def pendencias():

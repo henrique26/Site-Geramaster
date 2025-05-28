@@ -203,6 +203,18 @@
       <p>R$ {{ '%.2f'|format(saldo) }}</p>
     {% endif %}
   </div>
+    {% if ultimo_deposito %}
+    <div class="ultimo-deposito">
+        <h4>Último Depósito</h4>
+        <p>Valor: R$ {{ "{:.2f}".format(ultimo_deposito.valor) }}</p>
+        <p>Data: {{ ultimo_deposito.data.strftime("%d/%m/%Y") }}</p>
+    </div>
+{% else %}
+    <div class="ultimo-deposito">
+        <h4>Último Depósito</h4>
+        <p>Nenhum depósito registrado.</p>
+    </div>
+{% endif %}
 </div>
 </body>
 </html>

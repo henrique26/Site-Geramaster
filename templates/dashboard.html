@@ -172,111 +172,59 @@
     <div class="table-responsive">
   <table class="table table-bordered">
     <thead>
-      <tr>
-        {% if tipo == 'admin' %}
-        <th>Técnico</th>
-        {% endif %}
-        <th>Tipo</th>
-        <th>Data</th>
-        <th>Hora</th>
-        <th>Ação</th>
-      </tr>
+        <tr>
+            {% if tipo == 'admin' %}
+            <th>Técnico</th>
+            {% endif %}
+            <th>Data</th>
+            <th>Entrada</th>
+            <th>Entrada Almoço</th>
+            <th>Retorno Almoço</th>
+            <th>Saída</th>
+            <th>Ações</th>
+        </tr>
     </thead>
     <tbody>
-      {% for r in registros %}
-      <tr>
-        {% if tipo == 'admin' %}
-        <td>{{ r[1] }}</td>
+        {% for (usuario_registro, data), pontos in registros_agrupados.items() %}
+  <tr>
+    {% if tipo == 'admin' %}
+        <td>{{ usuario_registro }}</td>
         {% endif %}
-        <td>
-          {% if r[2] == 'entrada' %}
-          Entrada
-          {% elif r[2] == 'saida' %}
-          Saída
-          {% else %}
-          {{ r[2] }}
-          {% endif %}
-        </td>
-        <td>{{ r[3] }}</td>
-        <td>{{ r[4] }}</td>
-        <td>
-          <form action="{{ url_for('excluir_registro', id=r[0]) }}" method="post" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-          </form>
-        </td>
-      </tr>
-
-      {% if r[2] == 'entrada' %}
-      <!-- Se for entrada, insere automaticamente o horário de almoço logo depois -->
-      <tr>
-        {% if tipo == 'admin' %}
-        <td>{{ r[1] }}</td>
-        {% endif %}
-        <td>Entrada Almoço</td>
-        <td>{{ r[3] }}</td>
-        <td>12:00</td>
-        <td></td>
-      </tr>
-      <tr>
-        {% if tipo == 'admin' %}
-        <td>{{ r[1] }}</td>
-        {% endif %}
-        <td>Retorno Almoço</td>
-        <td>{{ r[3] }}</td>
-        <td>13:12</td>
-        <td></td>
-      </tr>
-      {% endif %}
-
-      {% endfor %}
+    <td>{{ data.strftime('%Y-%m-%d') }}</td>
+    <td>{{ pontos.entrada.hora if pontos.entrada else '---' }}</td>
+    <td>{{ pontos.entrada_almoco.hora }}</td>
+    <td>{{ pontos.retorno_almoco.hora }}</td>
+    <td>{{ pontos.saida.hora if pontos.saida else '---' }}</td>
+            <td>
+              <form action="{{ url_for('excluir_dia', data=data) }}{% if tipo == 'admin' and filtro_usuario %}?usuario={{ filtro_usuario }}{% endif %}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+              </form>
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
-  </table>
+</table>
+
+
+
 </div>
 
-<div id="saved-signature" style="margin-bottom: 20px; text-align: center;">
-  <h4 style="color: #fff;">Assinatura do Técnico:</h4>
-  <img id="signature-image" src="" alt="Assinatura aparecerá aqui" 
-       style="border: 2px solid #ff0000; width: 300px; height: 150px; background: #f0f0f0;">
-</div>
+<!-- ... sua tabela aqui ... -->
 
-<div style="text-align: center;">
-  <h3 style="color: #fff;">Assinar</h3>
-  <canvas id="signature-pad" 
-          style="border: 2px solid #ff0000; width: 300px; height: 150px; background: #222;"></canvas>
-  <br><br>
-  <button id="save-signature" 
-          style="background-color: #ff0000; color: #fff; border: none; padding: 10px 20px; margin: 5px; cursor: pointer;">
-    Salvar Assinatura
-  </button>
-  <button id="clear-signature" 
-          style="background-color: #555; color: #fff; border: none; padding: 10px 20px; margin: 5px; cursor: pointer;">
-    Limpar
-  </button>
-</div>
-<Br><Br>
+<!-- <div style="margin-top: 40px; border-top: 1px solid #000; width: 300px; padding-top: 10px;">
+  <p>Assinatura do Técnico: </p>
+  <br><br><br>
+</div> -->
 
-  </div>
-  <script>
-  const canvas = document.getElementById('signature-pad');
-  const signaturePad = new SignaturePad(canvas);
 
-  const saveButton = document.getElementById('save-signature');
-  const clearButton = document.getElementById('clear-signature');
-  const signatureImage = document.getElementById('signature-image');
+<!-- Botão exportar PDF -->
+<a href="{{ url_for('exportar_pdf') }}?filtro_data_inicio={{ filtro_data_inicio }}&filtro_data_fim={{ filtro_data_fim }}&filtro_usuario={{ filtro_usuario }}&filtro_data={{ filtro_data }}" class="btn btn-primary">Exportar PDF</a>
 
-  saveButton.addEventListener('click', function () {
-    if (signaturePad.isEmpty()) {
-      alert("Por favor, assine antes de salvar!");
-      return;
-    }
-    const dataURL = signaturePad.toDataURL(); 
-    signatureImage.src = dataURL; // Mostra a assinatura
-  });
 
-  clearButton.addEventListener('click', function () {
-    signaturePad.clear();
-  });
-</script>
+
+
+
+
 
 
 
