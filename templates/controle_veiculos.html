@@ -1,0 +1,69 @@
+<h2>Controle de Veículos - Manutenção e Abastecimento</h2>
+
+<form method="POST">
+  <label>Placa:</label>
+  <input type="text" name="placa" required><br>
+
+  <label>Tipo de Registro:</label>
+  <select name="tipo_registro" required>
+    <option value="troca_oleo">Troca de Óleo</option>
+    <option value="abastecimento">Abastecimento</option>
+  </select><br>
+
+  <label>Data:</label>
+  <input type="date" name="data" required><br>
+
+  <label>Km:</label>
+  <input type="number" name="km" required><br>
+
+  <label>Litros (se abastecimento):</label>
+  <input type="number" step="0.01" name="litros"><br>
+
+  <label>Valor (se abastecimento):</label>
+  <input type="number" step="0.01" name="valor"><br>
+
+  <label>Próxima troca Km (se troca de óleo):</label>
+  <input type="number" name="proxima_troca_km"><br>
+
+  <label>Próxima troca Data (se troca de óleo):</label>
+  <input type="date" name="proxima_troca_data"><br>
+
+  <label>Observações:</label><br>
+  <textarea name="observacoes"></textarea><br>
+
+  <button type="submit">Salvar</button>
+</form>
+
+<hr>
+
+<h3>Histórico</h3>
+<table border="1" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Placa</th>
+      <th>Tipo</th>
+      <th>Data</th>
+      <th>Km</th>
+      <th>Litros</th>
+      <th>Valor</th>
+      <th>Próxima troca Km</th>
+      <th>Próxima troca Data</th>
+      <th>Observações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in registros %}
+    <tr>
+      <td>{{ r[1] }}</td>
+      <td>{{ r[2] }}</td>
+      <td>{{ r[3] }}</td>
+      <td>{{ r[4] }}</td>
+      <td>{{ r[5] or '-' }}</td>
+      <td>{{ r[6] or '-' }}</td>
+      <td>{{ r[7] or '-' }}</td>
+      <td>{{ r[8] or '-' }}</td>
+      <td>{{ r[9] or '-' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
