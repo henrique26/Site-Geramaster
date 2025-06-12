@@ -69,8 +69,8 @@
 {% if alertas %}
   <div class="alert alert-warning" style="margin: 20px;">
     <strong>Alerta! Baixo RDV!</strong><br>
-    {% for usuario in alertas %}
-    • {{ usuario[0] }} está com saldo de R$ {{ '%.2f'|format(usuario[1]|float) }}<br>
+    {% for usuario, nome, saldo in alertas %}
+    <p>⚠️ Técnico {{ nome }} está com saldo baixo: R${{ "%.2f"|format(saldo) }}</p>
     {% endfor %}
   </div>
 {% endif %}
