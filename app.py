@@ -135,19 +135,25 @@ def login():
                     # Verifica saldos se for admin
                     if user[3] == 'admin':
                         cursor.execute("""
-                            SELECT u.nome,
-                                   COALESCE(SUM(CAST(d.valor AS NUMERIC)), 0) -
-                                   COALESCE(SUM(CAST(r.valor AS NUMERIC)), 0) AS saldo
+                            SELECT u.usuario, u.nome,
+                                   COALESCE(dep.total, 0) - COALESCE(rdv.total, 0) AS saldo
                             FROM usuarios u
-                            LEFT JOIN depositos d ON d.usuario = u.usuario
-                            LEFT JOIN rdvs r ON r.usuario = u.usuario
+                            LEFT JOIN (
+                                SELECT usuario, SUM(valor) AS total
+                                FROM depositos
+                                GROUP BY usuario
+                            ) dep ON dep.usuario = u.usuario
+                            LEFT JOIN (
+                                SELECT usuario, SUM(CAST(valor AS NUMERIC)) AS total
+                                FROM rdvs
+                                GROUP BY usuario
+                            ) rdv ON rdv.usuario = u.usuario
                             WHERE u.tipo = 'tecnico'
-                            GROUP BY u.nome
-                            HAVING COALESCE(SUM(CAST(d.valor AS NUMERIC)), 0) -
-                                   COALESCE(SUM(CAST(r.valor AS NUMERIC)), 0) < 100
+                              AND (COALESCE(dep.total, 0) - COALESCE(rdv.total, 0)) < 100
                         """)
                         alertas = cursor.fetchall()
-                        session['alertas'] = alertas
+                        session['alertas'] = [(usuario, nome, float(saldo)) for usuario, nome, saldo in alertas]
+
                     
                     return redirect(url_for('menu'))
 
