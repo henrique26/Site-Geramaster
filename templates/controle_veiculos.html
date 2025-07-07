@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Controle de Veículos - Geramaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+    <style>
+        /* Seus estilos CSS customizados */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #000000, #330000);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .logo {
+            display: block;
+            max-width: 350px;
+            margin: 20px auto;
+        }
+
+        h1, h2, h3 {
+            color: #fff;
+            text-align: center;
+        }
+
+        .btn {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-primary {
+            background-color: #e60000;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #990000;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-secondary {
+            background-color: #555;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #333;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #a71d2a;
+        }
+
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #111;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        table th, table td {
+            color: #fff;
+        }
+
+        .excluir {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .excluir:hover {
+            transform: scale(1.1);
+        }
+
+        .form-wrapper, .filtros-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .form-label {
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+        }
+
+        .actions-form {
+            display: inline;
+        }
+
+        .btn-voltar {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 8px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.2s ease-in-out;
+            border-radius: 0.25rem;
+        }
+
+        .btn-voltar:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .card-veiculos {
+            max-width: 700px;
+            margin: 0 auto;
+            border: 1px solid #444;
+        }
+
+        .observacoes-cell {
+            white-space: pre-wrap;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/static/Geramaster Logo Brando e Vermelho Geramaster fundo transparente.png" alt="Logo Geramaster" class="logo" />
+
+        <div class="mb-4">
+            <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br />
+            <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
+        </div>
+
+        {# FORMULÁRIO DE MANUTENÇÃO E ABASTECIMENTO #}
+        <h2 class="text-center mb-4">Controle de Veículos - Manutenção e Abastecimento</h2>
+        <div class="card p-4 bg-dark text-white mb-5 card-veiculos">
+            <form method="POST">
+                <input type="hidden" name="acao" value="salvar_registro">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                    <label for="placa" class="form-label">Placa:</label>
+                    <select name="placa" id="placa" class="form-select" required>
+                        <option value="">Selecione a Placa</option> {# Opção padrão para o usuário selecionar #}
+                        {% for placa_option in placas %} {# Reutilizamos a lista 'placas' que já vem do Python #}
+                            <option value="{{ placa_option }}">{{ placa_option }}</option>
+                        {% endfor %}
+                    </select>
+                    {# Opcional: Adicionar um campo de texto para "Outra Placa" caso a lista não contemple todas #}
+                    {# <div class="mt-2">
+                        <input type="text" class="form-control" id="nova_placa" name="nova_placa" placeholder="Ou digite uma nova placa se não estiver na lista">
+                    </div> #}
+                </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tipo_registro" class="form-label">Tipo de Registro:</label>
+                        <select name="tipo_registro" id="tipo_registro" class="form-select" required>
+                            {# Restringe opções para técnico #}
+                            {% if user_type == 'tecnico' %}
+                                <option value="abastecimento">Abastecimento</option>
+                            {% else %}
+                                <option value="abastecimento">Abastecimento</option>
+                                <option value="troca_oleo">Troca de Óleo</option>
+                                <option value="manutencao_geral">Manutenção Geral</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="data" class="form-label">Data:</label>
+                        <input type="date" class="form-control" id="data" name="data" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="km" class="form-label">Km:</label>
+                        <input type="text" class="form-control" id="km" name="km" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="litros" class="form-label">Litros:</label>
+                        <input type="number" step="0.01" class="form-control" id="litros" name="litros">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="valor" class="form-label">Valor:</label>
+                        <input type="number" step="0.01" class="form-control" id="valor" name="valor">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="observacoes" class="form-label">Observações:</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+
+        <hr style="border-top: 1px solid #444; margin: 40px 0;">
+
+        {# FILTROS REATIVADOS E ESTILIZADOS #}
+        <div class="filtros-wrapper mt-4 mb-4">
+    <h4>Filtrar Registros</h4>
+    <form method="GET" class="row g-3 align-items-end"> {# Adicionado align-items-end para alinhar itens na parte inferior #}
+        <div class="col-md-3 col-sm-6"> {# Ajuste de colunas para melhor responsividade #}
+            <label for="placa_filtro" class="form-label">Filtrar por Placa:</label>
+            <select name="placa_filtro" id="placa_filtro" class="form-select">
+                <option value="">Todas as Placas</option> {# Opção para ver todas as placas #}
+                {% for placa_option in placas %} {# Itera sobre a lista 'placas' que vem do Python #}
+                    <option value="{{ placa_option }}" {% if placa_option == filtro_placa %}selected{% endif %}>{{ placa_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 col-sm-6"> {# Ajuste de colunas para melhor responsividade #}
+            <label for="data_filtro" class="form-label">Filtrar por Data:</label>
+            <input type="date" class="form-control" id="data_filtro" name="data_filtro" value="{{ filtro_data }}">
+        </div>
+        {# Restringe opções de filtro por tipo para técnico #}
+        <div class="col-md-3 col-sm-6"> {# Ajuste de colunas para melhor responsividade #}
+            <label for="tipo_filtro" class="form-label">Filtrar por Tipo:</label>
+            <select name="tipo_filtro" id="tipo_filtro" class="form-select">
+                {% if user_type == 'tecnico' %}
+                    {# Técnico só vê abastecimento. O 'value' deve ser 'abastecimento' para o backend filtrar corretamente #}
+                    <option value="abastecimento" selected>Abastecimento</option>
+                {% else %}
+                    <option value="">Todos</option> {# Admin pode ver todos os tipos #}
+                    <option value="abastecimento" {% if filtro_tipo == 'abastecimento' %}selected{% endif %}>Abastecimento</option>
+                    <option value="troca_oleo" {% if filtro_tipo == 'troca_oleo' %}selected{% endif %}>Troca de Óleo</option>
+                    <option value="manutencao" {% if filtro_tipo == 'manutencao' %}selected{% endif %}>Manutenção Geral</option> {# Corrigido para "manutencao" #}
+                {% endif %}
+            </select>
+        </div>
+        <div class="col-md-3 col-sm-6"> {# Ajuste de colunas para melhor responsividade #}
+            <label for="tecnico_filtro" class="form-label">Filtrar por Técnico:</label>
+            {% if user_type == 'tecnico' %}
+                {# Se o usuário for um técnico, o campo é apenas de leitura e mostra o nome dele #}
+                <input type="text" class="form-control" id="tecnico_filtro" name="tecnico_filtro" value="{{ session.get('nome') or session.get('usuario') }}" readonly>
+            {% else %}
+                {# Para outros tipos de usuário, exibe o select option para filtrar #}
+                <select name="tecnico_filtro" id="tecnico_filtro" class="form-select">
+                    <option value="">Todos os Técnicos</option> {# Opção para ver todos os veículos #}
+                    {% for tecnico in tecnicos %}
+                        <option value="{{ tecnico }}" {% if tecnico == filtro_tecnico %}selected{% endif %}>{{ tecnico }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+        <div class="col-12 d-flex gap-2"> {# Removido align-items-end aqui, pois já está no form. Adicionado gap-2 para espaçamento #}
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button> {# Botão de filtro mais claro #}
+            <a href="{{ url_for('controle_veiculos') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a> {# Ícone de limpeza #}
+        </div>
+    </form>
+</div>
+        <h3>Histórico de Registros de Veículos</h3>
+
+        <div class="table-wrapper mt-5">
+            <table class="table table-dark table-striped table-bordered text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Técnico</th> 
+                        <th>Tipo</th>
+                        <th>Data</th>
+                        <th>Km</th>
+                        <th>Litros</th>
+                        <th>Valor</th>
+                        <th>Próxima troca Km</th>
+                        <th>Próxima troca Data</th>
+                        <th>Observações</th>
+                        <th>Consumo (Km/L)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td>{{ r[1] }}</td> {# Placa #}
+                        <td>{{ r[2] }}</td> {# Técnico #}
+                        <td>{{ r[3] }}</td> {# Tipo #}
+                        <td>{{ r[4].strftime('%d/%m/%Y') if r[4] else '-' }}</td> {# Data #}
+                        <td>{{ r[5] }}</td> {# Km #}
+                        <td>{{ r[6] or '-' }}</td> {# Litros #}
+                        <td>{{ "%.2f"|format(r[7]) if r[7] is not none else '-' }}</td> {# Valor #}
+                        <td>{{ r[8] or '-' }}</td> {# Próxima troca Km #}
+                        <td>{{ r[9].strftime('%d/%m/%Y') if r[9] else '-' }}</td> {# Próxima troca Data #}
+                        <td class="observacoes-cell">{{ r[10] or '-' }}</td> {# Observações #}
+                        <td>
+                            {% if r[3] == 'abastecimento' %} {# Condição para tipo de registro #}
+                                {{ r[12] if r | length > 12 else '-' }} {# Consumo - Agora no índice 12 #}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {# Controla exibição do botão Excluir para técnicos #}
+                            {% if user_type == 'admin' or (user_type == 'tecnico' and r[11] == user_id_logado and r[3] == 'abastecimento') %}
+                                <form method="POST" class="actions-form" onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
+                                    <input type="hidden" name="acao" value="excluir_registro" />
+                                    <input type="hidden" name="id_registro" value="{{ r[0] }}" />
+                                    <button type="submit" class="excluir">🗑️</button>
+                                </form>
+                            {% else %}
+                                - {# Para técnicos, se não for seu abastecimento #}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="12">Nenhum registro encontrado para os filtros aplicados.</td> {# Colspan ajustado para 12 colunas #}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Restringe o Consumo Médio por Veículo (Geral) para apenas 'admin' #}
+        {% if user_type == 'admin' %}
+            <h3 class="mt-5">Consumo Médio por Veículo (Geral)</h3>
+            <div class="card p-4 bg-dark text-white mb-5 card-veiculos">
+                <ul class="list-unstyled">
+                    {% for placa, consumo in consumo_por_placa.items() %}
+                    <li><strong>{{ placa }}:</strong> {{ consumo }}</li>
+                    {% else %}
+                    <li>Nenhum consumo médio calculado ainda ou dados insuficientes.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {# NOVO: Contador de KM para próxima troca de óleo (APENAS PARA ADMIN) #}
+            <h3 class="mt-5">Próximas Trocas de Óleo por Veículo</h3>
+            <div class="card p-4 bg-dark text-white mb-5 card-veiculos">
+                {% if proximas_trocas_oleo %}
+                    <table class="table table-dark table-striped table-bordered text-center align-middle">
+                        <thead>
+                            <tr>
+                                <th>Placa</th>
+                                <th>KM Restantes para Troca</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for troca in proximas_trocas_oleo %}
+                            <tr>
+                                <td>{{ troca.placa }}</td>
+                                <td>{{ troca.km_restantes }} KM</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Nenhum dado de próxima troca de óleo disponível.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
