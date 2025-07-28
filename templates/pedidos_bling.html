@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de Venda - Bling</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Adaptados da Página do Menu Principal */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #300000 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .logo {
+            display: block;
+            max-width: 250px;
+            margin: 0 auto 30px auto;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: #faf8f8;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        /* Estilos dos botões adaptados do menu */
+        .btn-custom {
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Cores específicas para os botões */
+        .btn-primary-custom {
+            background-color: #e60000;
+            border: none;
+        }
+        .btn-primary-custom:hover {
+            background-color: #ff3333;
+        }
+
+        .btn-secondary-custom {
+            background-color: #444;
+            border: none;
+            color: #fff;
+        }
+        .btn-secondary-custom:hover {
+            background-color: #666;
+        }
+
+        .btn-success-custom {
+            background-color: #28a745;
+            border: none;
+        }
+        .btn-success-custom:hover {
+            background-color: #38c156;
+        }
+
+        .btn-light-custom {
+            background-color: #d3d3d3;
+            border: none;
+            color: #333;
+        }
+        .btn-light-custom:hover {
+            background-color: #a9a9a9;
+        }
+
+        .btn-danger-custom {
+            background-color: #dc3545;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+        }
+        .btn-danger-custom:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Estilos para as mensagens flash (Bootstrap Alerts) */
+        .alert {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+        .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+        .alert-warning { color: #856404; background-color: #fff3cd; border-color: #ffeeba; }
+
+        /* Estilo para o CARD de cada pedido */
+        .pedido-card {
+            background-color: rgba(255, 255, 255, 0.08); /* Fundo semi-transparente para o card */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px; /* Espaçamento entre os cards */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .pedido-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pedido-card h4 {
+            color: #e60000; /* Cor para títulos dentro do card */
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        /* Estilo da tabela dentro do card */
+        .pedido-card .table {
+            background-color: transparent; /* Fundo transparente para a tabela dentro do card */
+            margin-top: 0;
+            margin-bottom: 15px;
+            /* Adicione estas duas linhas para melhor controle do layout da tabela */
+            width: 100%; /* Garante que a tabela ocupe a largura total */
+            table-layout: auto; /* Permite que o navegador ajuste larguras com base no conteúdo */
+        }
+        .pedido-card .table th, .pedido-card .table td {
+            border-color: rgba(255, 255, 255, 0.1); /* Bordas mais claras dentro do card */
+            padding: 10px;
+            font-size: 0.95rem;
+            color: #fff; /* Garante que o texto da célula seja branco */
+            text-align: left; /* Adicionado: Alinha todo o texto da célula à esquerda por padrão */
+            vertical-align: middle; /* Centraliza verticalmente o conteúdo da célula */
+        }
+        /* Específico para o alinhamento de texto da Situação */
+        .pedido-card .table td.situacao-col {
+            text-align: left; /* Garante que o texto da situação esteja alinhado à esquerda */
+        }
+        .pedido-card .table thead th {
+            background-color: rgba(230, 0, 0, 0.8); /* Fundo do cabeçalho da tabela dentro do card */
+            text-align: left; /* Alinha o texto do cabeçalho à esquerda */
+        }
+        .pedido-card .table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03); /* Linhas pares mais sutis */
+        }
+        .pedido-card .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Estilos para lista de itens do pedido dentro do card */
+        .item-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .item-list li {
+            background-color: rgba(0, 0, 0, 0.4); /* Fundo mais escuro para itens dentro do card */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+            color: #eee; /* Cor do texto para itens */
+        }
+        .item-list li strong {
+            color: #ff6666; /* Cor do texto forte nos itens dentro do card */
+        }
+        .item-list li span.item-details { /* ESPECÍFICO: Garante cor clara para detalhes do item */
+            color: #fff; /* Cor do texto para detalhes do item */
+        }
+        .no-items, .no-orders, .no-observations {
+            text-align: center;
+            padding: 20px;
+            color: #ccc;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        .bling-link {
+            color: #ffcccc; /* Cor mais clara para links no tema escuro */
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .bling-link:hover {
+            text-decoration: underline;
+        }
+        .observation-section {
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05); /* Fundo mais sutil para observações */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .observation-section h4 {
+            margin-top: 0;
+            color: #e60000;
+        }
+        .form-control-dark {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .form-control-dark::placeholder {
+            color: #bbb;
+        }
+        .form-control-dark:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #e60000;
+            box-shadow: 0 0 0 0.25rem rgba(230, 0, 0, 0.25);
+            color: #fff;
+        }
+        .form-label-dark {
+            color: #fff;
+        }
+        .form-select-dark {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); /* Seta branca */
+        }
+        .form-select-dark option {
+            background-color: #330000; /* Fundo escuro para opções */
+            color: #fff;
+        }
+
+        /* Media Queries para Responsividade */
+        @media (max-width: 767px) { /* Para telas menores que 768px (sm) */
+            body {
+                padding: 15px;
+            }
+            .logo {
+                max-width: 200px;
+                margin-bottom: 25px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+            .btn-custom {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+            }
+            .btn-danger-custom {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            .pedido-card {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            .pedido-card .table th, .pedido-card .table td {
+                padding: 8px; /* Reduz padding da tabela em mobile */
+                font-size: 0.85em;
+            }
+            .observation-section {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="/static/Geramaster Logo Brando e Vermelho Geramaster fundo transparente.png" alt="Logo Geramaster" class="logo">
+
+    <h1 class="my-4">Propostas Geramaster</h1>
+    
+    <div class="mb-3">
+            <a href="{{ url_for('logout') }}" class="btn btn-danger me-2">Sair</a>
+            <a href="{{ url_for('menu') }}" class="btn btn-secondary">Voltar para Menu</a>
+        </div>
+
+    {# Formulário de Pesquisa #}
+    <form method="GET" class="mb-5 p-4 rounded" style="background-color: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+        <h4 class="text-center mb-4" style="color: #e60000;">Filtrar Pedidos</h4>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="observacoes" class="form-label form-label-dark">Número da Proposta</label>
+                <input type="text" class="form-control form-control-dark" id="observacoes" name="observacoes" value="{{ search_observacoes }}">
+            </div>
+            <div class="col-md-6">
+                <label for="cliente" class="form-label form-label-dark">Nome do Cliente</label>
+                <input type="text" class="form-control form-control-dark" id="cliente" name="cliente" value="{{ search_cliente }}">
+            </div>
+            <div class="col-md-6"> {# Apenas um campo de data #}
+                <label for="data" class="form-label form-label-dark">Data</label>
+                <input type="date" class="form-control form-control-dark" id="data" name="data" value="{{ search_data }}">
+            </div>
+            <div class="col-md-6">
+                <label for="status" class="form-label form-label-dark">Status</label>
+                <select class="form-select form-select-dark" id="status" name="status">
+                    {% for option in status_options %}
+                        <option value="{{ option }}" {% if option == search_status %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-custom btn-primary-custom mt-3" style="width: auto; padding: 10px 30px;">Aplicar Filtros</button>
+            </div>
+        </div>
+    </form>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if pedidos %}
+        {% for pedido in pedidos %}
+        <div class="pedido-card">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID Bling</th>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        {% if not is_tech %} {# Mudei aqui: A coluna inteira só aparece se não for técnico #}
+                        <th>Valor Total</th>
+                        {% endif %}
+                        <th class="situacao-col">Situação</th> {# Adicionei uma classe para o alinhamento #}
+                        <th>Última Atualização</th>
+                        <th>Link Bling</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ pedido.bling_pedido_id }}</td>
+                        <td>{{ pedido.numero if pedido.numero is not none else 'N/A' }}</td>
+                        <td>{{ pedido.nome_cliente if pedido.nome_cliente is not none and pedido.nome_cliente|length > 0 else 'Cliente Não Informado' }}</td>
+                        <td>{{ pedido.data_pedido.strftime('%Y-%m-%d') if pedido.data_pedido else 'N/A' }}</td>
+                        {% if not is_tech %} {# Mudei aqui: A célula inteira só aparece se não for técnico #}
+                        <td>R$ <span style="color: #fff;">{{ "%.2f"|format(pedido.valor_total if pedido.valor_total is not none else 0.00) }}</span></td>
+                        {% endif %}
+                        <td class="situacao-col"> {# Adicionei a classe aqui também #}
+                            {% if pedido.situacao_pedido_descricao is not none and pedido.situacao_pedido_descricao|length > 0 %}
+                                {{ pedido.situacao_pedido_descricao }}
+                            {% else %}
+                                N/A (ID: {{ pedido.situacao_pedido_id if pedido.situacao_pedido_id is not none else 'N/A' }})
+                            {% endif %}
+                        </td>
+                        <td>{{ pedido.data_ultima_atualizacao.strftime('%Y-%m-%d %H:%M:%S') if pedido.data_ultima_atualizacao else 'N/A' }}</td>
+                        <td>
+                            {% if pedido.link_bling %}<a href="{{ pedido.link_bling }}" target="_blank" class="bling-link">Ver no Bling</a>{% else %}N/A{% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="observation-section">
+            <h4>Observações / Número proposta:</h4>
+            <p>{{ pedido.observacoes if pedido.observacoes is not none and pedido.observacoes|length > 0 else 'Nenhuma observação.' }}</p>
+        </div>
+
+        <h4>Itens do Pedido:</h4>
+        {% if pedido.itens %}
+        <ul class="item-list">
+            {% for item in pedido.itens %}
+            <li>
+                <strong>{{ item.descricao_item if item.descricao_item is not none and item.descricao_item|length > 0 else 'Item sem Descrição' }}</strong>
+                {% if item.codigo_item %}({{ item.codigo_item }}){% endif %} <br>
+                <span class="item-details">
+                    Tipo: {{ item.tipo_item.capitalize() if item.tipo_item is not none and item.tipo_item|length > 0 else 'N/A' }} |
+                    Qtd: <span style="color: #fff;">{{ "%.2f"|format(item.quantidade|default(0)) }}</span>
+                    {% if not is_tech %} {# Mudei aqui para esconder o valor unitário e total do item também #}
+                    | V.Unit: R$ <span style="color: #fff;">{{ "%.2f"|format(item.valor_unitario if item.valor_unitario is not none else 0) }}</span> |
+                    Total Item: R$ <span style="color: #fff;">{{ "%.2f"|format(item.valor_total_item if item.valor_total_item is not none else 0) }}</span>
+                    {% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-items">Nenhum item encontrado para esta proposta.</p>
+        {% endif %}
+    </div> {# Fecha .pedido-card #}
+        {% endfor %}
+    {% else %}
+    <p class="no-orders">Nenhuma proposta encontrada no Bling com os filtros aplicados.</p>
+    {% endif %}
+
+</div>
+</body>
+</html>

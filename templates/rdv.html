@@ -1,92 +1,318 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDV</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RDV</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #000000, #330000);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .logo {
+      display: block;
+      max-width: 200px;
+      margin: 20px auto;
+    }
+
+    .btn-primary {
+      background-color: #e60000;
+      border: none;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      background-color: #990000;
+      transform: scale(1.05);
+    }
+
+    .btn-secondary {
+      background-color: #555;
+      border: none;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-secondary:hover {
+      background-color: #333;
+      transform: scale(1.05);
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border: none;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      transform: scale(1.05);
+    }
+    
+
+    .btn-danger {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-danger:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-voltar {
+      display: inline-block;
+      margin: 10px 0;
+      padding: 8px 15px;
+      background-color: #007BFF;
+      color: white;
+      text-decoration: none;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-voltar:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    table th, table td {
+      color: #fff;
+    }
+
+    .list-group-item {
+      background-color: #222;
+      color: #fff;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-    <h2 class="text-center mb-4">Geramaster App</h2>
-    <div class="container">
-        <h1 class="my-4">RDV - Registro de Valores</h1>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br>
-        <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
+<div class="container">
+  <img src="/static/Geramaster Logo Brando e Vermelho Geramaster fundo transparente.png" alt="Logo Geramaster - Branca e Vermelha" class="logo" style="max-width: 350px;">
 
-        <!-- Formulário RDV -->
-        <form method="POST" class="mb-3">
-            <div class="mb-3">
-                <label for="valor" class="form-label">Valor</label>
-                <input type="text" name="valor" id="valor" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
-                <input type="text" name="descricao" id="descricao" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label for="data" class="form-label">Data</label>
-                <input type="date" name="data" id="data" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrar RDV</button>
-        </form>
-            {% if tipo == 'admin' %}
-    <form method="get" style="margin-bottom: 20px;">
-        <label for="filtro_data">Data:</label>
-        <input type="date" name="filtro_data" id="filtro_data" value="{{ filtro_data }}">
+  <h1 class="my-4">RDV - Registro de Valores</h1>
+  <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br>
+  <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
 
-        <label for="filtro_usuario">Técnico:</label>
-        <select name="filtro_usuario" id="filtro_usuario">
-            <option value="">Todos</option>
-            {% for tecnico in tecnicos %}
-                <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Filtrar</button>
-    </form>
-{% endif %}
-
-
-        <h3>Histórico de RDVs</h3>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    {% if is_admin %}
-                    <th>Nome do Técnico</th>
-                    {% endif %}
-                    <th>Valor</th>
-                    <th>Descrição</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for rdv in rdvs %}
-                <tr>
-                    {% if is_admin %}
-                    <td>{{ rdv[1] }}</td>
-                    {% endif %}
-                    <td>{{ rdv[2] }}</td>
-                    <td>{{ rdv[3] }}</td>
-                    <td>{{ rdv[4] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <form method="POST" class="mb-3">
+    <div class="mb-3">
+      <label for="valor" class="form-label">Valor</label>
+      <input type="text" name="valor" id="valor" class="form-control" required>
     </div>
+    <div class="mb-3">
+      <label for="descricao" class="form-label">Descrição</label>
+      <input type="text" name="descricao" id="descricao" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="data" class="form-label">Data</label>
+      <input type="date" name="data" id="data" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Registrar RDV</button>
+  </form>
+
+  {% if tipo == 'admin' or tipo == 'tecnico' %}
+  <form method="get" style="margin-bottom: 20px;">
+  <div class="mb-3">
+    <label for="filtro_data">Data:</label>
+    <input type="date" name="filtro_data" id="filtro_data" class="form-control" value="{{ filtro_data if filtro_data else '' }}"> {# Mantenha este #}
+  </div>
+  <div class="row mb-3">
+    <div class="col-md-4 mb-2">
+      <label for="filtro_data_inicio" class="form-label">Data início:</label>
+      {# ADICIONE/MODIFIQUE ESTA LINHA #}
+      <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control" value="{{ filtro_data_inicio if filtro_data_inicio else '' }}">
+    </div>
+    <div class="col-md-4 mb-2">
+      <label for="filtro_data_fim" class="form-label">Data fim:</label>
+      {# ADICIONE/MODIFIQUE ESTA LINHA #}
+      <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control" value="{{ filtro_data_fim if filtro_data_fim else '' }}">
+    </div>
+  </div>
+  <div class="mb-3">
+    <label for="filtro_usuario">Técnico:</label>
+    <select name="filtro_usuario" class="form-control" id="filtro_usuario">
+      <option value="">Todos</option>
+      {% for tecnico in tecnicos %}
+      <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary me-2">Filtrar</button>
+<button type="button" class="btn btn-secondary me-2" onclick="limparFiltros()">Limpar Filtros</button>
+
+{% if user_type == 'admin' %}
+<button type="button" id="exportarRdvPdf" class="btn btn-success">Exportar RDV para PDF</button>
+{% endif %}
+</form>
+{% endif %}
+  <div>
+    <div class="my-4">
+      {% if is_admin %}
+        <h3>Saldos dos Técnicos</h3>
+        {% if saldos %}
+          <ul class="list-group">
+            {% for tecnico, saldo in saldos.items() %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ tecnico }}
+                <span>R$ {{ '%.2f'|format(saldo) }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>Nenhum saldo disponível.</p>
+        {% endif %}
+      {% else %}
+        <h3>Seu saldo</h3>
+        <p>R$ {{ '%.2f'|format(saldo) }}</p>
+      {% endif %}
+    </div>
+      {% if ultimo_deposito %}
+      <div class="ultimo-deposito">
+          <h4>Último Depósito</h4>
+          <p>Valor: R$ {{ "{:.2f}".format(ultimo_deposito.valor) }}</p>
+          <p>Data: {{ ultimo_deposito.data.strftime("%d/%m/%Y") }}</p>
+      </div>
+  {% else %}
+      <div class="ultimo-deposito">
+          <h4>Último Depósito</h4>
+          <p>Nenhum depósito registrado.</p>
+      </div>
+  {% endif %}
+  </div>
+
+  <h3>Histórico de RDVs</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        {% if is_admin %}
+          <th>Nome do Técnico</th>
+        {% endif %}
+        <th>Valor</th>
+        <th>Descrição</th>
+        <th>Data</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rdv in rdvs %}
+      <tr>
+        {% if is_admin %}
+          <td>{{ rdv[1] }}</td>
+        {% endif %}
+        <td>R$ {{ "%.2f"|format(rdv[2]|float) }}</td>
+        <td>{{ rdv[3] }}</td>
+        <td>{{ rdv[4] }}</td>
+        <td>
+          {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
+          <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
+            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const exportButton = document.getElementById('exportarRdvPdf');
+    if (exportButton) {
+        exportButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Impede o comportamento padrão do link
+
+            const url = new URL("{{ url_for('exportar_rdv_pdf') }}", window.location.origin);
+            
+            const dataUnica = document.getElementById('filtro_data').value;
+            const dataInicioFiltro = document.getElementById('filtro_data_inicio').value;
+            const dataFimFiltro = document.getElementById('filtro_data_fim').value;
+            const tecnicoFiltro = document.getElementById('filtro_usuario').value;
+
+            // Lógica para adicionar os parâmetros de data à URL
+            if (dataInicioFiltro && dataFimFiltro) {
+                url.searchParams.append('filtro_data_inicio', dataInicioFiltro);
+                url.searchParams.append('filtro_data_fim', dataFimFiltro);
+            } else if (dataUnica) {
+                url.searchParams.append('filtro_data', dataUnica);
+            }
+
+            if (tecnicoFiltro) {
+                url.searchParams.append('filtro_usuario', tecnicoFiltro);
+            }
+
+            // --- NOVO DEBUG NO JAVASCRIPT: Imprima a URL final ---
+            console.log("JS FINAL URL:", url.toString());
+            // --- FIM NOVO DEBUG ---
+
+            window.open(url.toString(), '_blank');
+        });
+    }
+
+    // Lógica de limpeza de campos para usabilidade
+    // Mantenha esta parte do código como está, ela é uma boa prática
+    const inputDataUnica = document.getElementById('filtro_data');
+    const inputDataInicio = document.getElementById('filtro_data_inicio');
+    const inputDataFim = document.getElementById('filtro_data_fim');
+
+    if (inputDataUnica) {
+        inputDataUnica.addEventListener('change', function() {
+            if (this.value) {
+                if (inputDataInicio) inputDataInicio.value = '';
+                if (inputDataFim) inputDataFim.value = '';
+            }
+        });
+    }
+
+    if (inputDataInicio) {
+        inputDataInicio.addEventListener('change', function() {
+            if (this.value) {
+                if (inputDataUnica) inputDataUnica.value = '';
+            }
+        });
+    }
+
+    if (inputDataFim) {
+        inputDataFim.addEventListener('change', function() {
+            if (this.value) {
+                if (inputDataUnica) inputDataUnica.value = '';
+            }
+        });
+    }
+});
+</script>
+<script>
+    function limparFiltros() {
+        // Limpa o campo de data única (se você tiver um input com id 'filtro_data')
+        const filtroDataUnica = document.getElementById('filtro_data');
+        if (filtroDataUnica) {
+            filtroDataUnica.value = '';
+        }
+
+        // Limpa os campos de data de início e fim
+        document.getElementById('filtro_data_inicio').value = '';
+        document.getElementById('filtro_data_fim').value = '';
+
+        // Reseta a seleção do técnico para a opção "Todos os Técnicos" (value="")
+        document.getElementById('filtro_usuario').value = '';
+
+        // Opcional: Recarrega a página ou submete o formulário com os filtros vazios
+        // Escolha UMA das opções abaixo, ou nenhuma se o usuário for clicar em "Exportar" novamente.
+
+        // Opção A: Redireciona para a página base de RDV, limpando a URL.
+        // Isso também limpará os resultados exibidos na tabela da página.
+        window.location.href = '/rdv'; // <-- ALtere '/rdv' para a sua rota principal da página de RDV
+
+        // Opção B: Submete o formulário com os valores vazios.
+        // document.querySelector('form').submit(); // Isso re-executará a consulta com filtros vazios.
+    }
+</script>
 </body>
+
+
 </html>
 
-<style>
-.btn-voltar {
-    display: inline-block;
-    margin: 10px 0;
-    padding: 8px 15px;
-    background-color: #007BFF;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-}
-.btn-voltar:hover {
-    background-color: #0056b3;
-}
-</style>
