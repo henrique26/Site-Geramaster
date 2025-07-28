@@ -3,3 +3,4 @@ gunicorn==21.2.0
 pytz
 psycopg2-binary
 fpdf2
+requests
