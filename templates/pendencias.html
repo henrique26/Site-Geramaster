@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #000000, #330000);
+        color: #fff;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .logo {
+        display: block;
+        max-width: 350px;
+        margin: 20px auto;
+      }
+
+      h1, h2, h3 {
+        color: #fff;
+        text-align: center;
+      }
+
+      .btn {
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .btn:hover {
+        transform: scale(1.05);
+      }
+
+      .btn-primary {
+        background-color: #e60000;
+        border: none;
+      }
+
+      .btn-primary:hover {
+        background-color: #990000;
+      }
+
+      .btn-success {
+        background-color: #28a745;
+        border: none;
+      }
+
+      .btn-success:hover {
+        background-color: #218838;
+      }
+
+      .btn-secondary {
+        background-color: #555;
+        border: none;
+      }
+
+      .btn-secondary:hover {
+        background-color: #333;
+      }
+
+      .btn-danger {
+        background-color: #dc3545;
+        border: none;
+      }
+
+      .btn-danger:hover {
+        background-color: #a71d2a;
+      }
+
+      .form-control {
+        background-color: #111;
+        color: #fff;
+        border: 1px solid #555;
+      }
+
+      table th, table td {
+        color: #fff;
+      }
+
+      .status-pendente {
+        background-color: #ffc107;
+        color: #000;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+
+      .status-resolvida {
+        background-color: #28a745;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+
+      .excluir {
+        background: none;
+        border: none;
+        color: red;
+        font-size: 1.2rem;
+        cursor: pointer
+      }
+              .excluir {
+          background: none;
+          border: none;
+          color: red;
+          font-size: 1.2rem;
+          cursor: pointer;
+        }
+
+        .form-wrapper, .filtros-wrapper {
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+
+        .table-wrapper {
+          overflow-x: auto;
+        }
+
+        .form-label {
+          color: #fff;
+        }
+
+        .btn-sm {
+          padding: 0.25rem 0.5rem;
+        }
+
+        .actions-form {
+          display: inline;
+        }
+
+        .btn-voltar {
+      display: inline-block;
+      margin: 10px 0;
+      padding: 8px 15px;
+      background-color: #007BFF;
+      color: white;
+      text-decoration: none;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .btn-voltar:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/static/Geramaster Logo Brando e Vermelho Geramaster fundo transparente.png" alt="Logo Geramaster" class="logo" />
+
+        <div class="mb-4">
+            <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br />
+            <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
+        </div>
+
+        <!-- FORMULÁRIO DE NOVA PENDÊNCIA -->
+        <h2 class="text-center mb-4">Adicionar Pendência</h2>
+<div class="card p-4 bg-dark text-white mb-5" style="max-width: 600px; margin: 0 auto; border: 1px solid #444;">
+  <form method="POST">
+    <input type="hidden" name="acao" value="adicionar">
+
+    <div class="mb-3">
+      <label for="numero_os" class="form-label">Número da OS</label>
+      <input type="text" class="form-control" id="numero_os" name="numero_os" placeholder="Ex: 12345" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="data" class="form-label">Data</label>
+      <input type="date" class="form-control" id="data" name="data" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="cliente" class="form-label">Cliente</label>
+      <input type="text" class="form-control" id="cliente" name="cliente" placeholder="Nome do Cliente" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="pendencia" class="form-label">Descrição da Pendência</label>
+      <textarea class="form-control" id="pendencia" name="pendencia" rows="4" placeholder="Descreva a pendência aqui..." required></textarea>
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-success">Adicionar</button>
+    </div>
+  </form>
+</div>
+
+
+        <!-- FILTROS -->
+        <div class="filtros-wrapper mt-5">
+            <h2>Filtrar Pendências</h2>
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="numero_os" placeholder="Número da OS" value="{{ filtro_os }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="cliente" placeholder="Cliente" value="{{ filtro_cliente }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" name="data" value="{{ filtro_data }}">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Filtrar</button>
+                    <a href="{{ url_for('pendencias') }}" class="btn btn-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABELA DE PENDÊNCIAS -->
+        <div class="table-wrapper mt-5">
+            <table class="table table-dark table-striped table-bordered text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>OS</th>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Pendência</th>
+                        <th>Status</th>
+                        <th>Criado por</th>
+                        <th>Concluído por</th>
+                        <th>OS Solucionada</th>
+                        <th>Observações</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pendencias %}
+                    <tr>
+                        <td>{{ p[1] }}</td>
+                        <td>{{ p[2].strftime('%d/%m/%Y') }}</td>
+                        <td>{{ p[3] }}</td>
+                        <td>{{ p[4] }}</td>
+                        <td>
+                            {% if p[5] == 'Pendente' %}
+                                <span class="status-pendente">{{ p[5] }}</span>
+                            {% else %}
+                                <span class="status-resolvida">{{ p[5] }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p[6] }}</td>
+                        <td>{{ p[7] if p[7] else '' }}</td>
+                        <td>{{ p[8] if p[8] else '-' }}</td>
+                        <td>{{ p[9] if p[9] else '-' }}</td>
+                        <td>
+                            {% if p[5] == 'Pendente' %}
+                              <form method="POST" class="actions-form">
+                                <input type="hidden" name="acao" value="resolver" />
+                                <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+
+                                <input type="text" name="numero_os_concluida" class="form-control mb-1" placeholder="Nº OS"  required />
+                                <textarea name="observacoes" class="form-control textarea-grande" placeholder="Observações" rows="5"></textarea>
+
+                                <button type="submit" class="btn btn-sm btn-success">✔️</button>
+                              </form>
+                            {% endif %}
+                            
+
+                            {% if tipo == 'admin' or p[6] == usuario %}
+                                <form method="POST" class="actions-form" onsubmit="return confirm('Quer mesmo excluir?');">
+                                    <input type="hidden" name="acao" value="excluir" />
+                                    <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                                    <button type="submit" class="excluir">🗑️</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8">Nenhuma pendência encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
