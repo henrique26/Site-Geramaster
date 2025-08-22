@@ -2,9 +2,9 @@
 <html lang="pt-br">
 <head>
     <script src="/register-sw.js" defer></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDV - Geramaster</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Depósitos - Geramaster</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="manifest" href="/static/manifest.json">
@@ -359,11 +359,11 @@
                 <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
             </a>
 
-            <a href="{{ url_for('rdv') }}" class="nav-link active">
+            <a href="{{ url_for('rdv') }}" class="nav-link">
                 <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
             </a>
 
-            <a href="{{ url_for('deposito') }}" class="nav-link">
+            <a href="{{ url_for('deposito') }}" class="nav-link active">
                 <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
             </a>
 
@@ -395,177 +395,158 @@
 
     <div class="content container">
         <div class="main-header">
-            <h1 class="welcome-text">RDV - Relatório de Despesas de Viagem</h1>
+            <h1 class="welcome-text">Registro de Depósitos</h1>
         </div>
+        
+        
 
+        {% if tipo_usuario == 'admin' %}
         <div class="card p-4">
-            <h3 class="mb-4">Registrar Novo RDV</h3>
-            <form method="POST" class="needs-validation" novalidate>
+            <h3 class="mb-4">Registrar Novo Depósito</h3>
+            <form method="POST" action="{{ url_for('deposito') }}" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Técnico</label>
+                    <select name="usuario" id="usuario" class="form-select" required>
+                        <option value="" disabled selected>Selecione um técnico</option>
+                        {% for tecnico in tecnicos_disponiveis %}
+                            <option value="{{ tecnico.usuario }}">{{ tecnico.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Por favor, selecione um técnico.</div>
+                </div>
+
                 <div class="mb-3">
                     <label for="valor" class="form-label">Valor</label>
-                    <input type="text" name="valor" id="valor" class="form-control" placeholder="Ex: 50,00 ou 50.00" required pattern="[0-9]+([,\.][0-9]{1,2})?" />
-                    <div class="invalid-feedback">Por favor, informe um valor válido.</div>
+                    <input type="text" name="valor" id="valor" class="form-control" placeholder="Ex: 100,50 ou 100.50" required pattern="[0-9]+([,\.][0-9]{1,2})?" />
+                    <div class="invalid-feedback">Informe um valor válido (ex: 100,50).</div>
                 </div>
-                <div class="mb-3">
-                    <label for="descricao" class="form-label">Descrição</label>
-                    <input type="text" name="descricao" id="descricao" class="form-control" required />
-                    <div class="invalid-feedback">Por favor, informe uma descrição.</div>
-                </div>
+
                 <div class="mb-3">
                     <label for="data" class="form-label">Data</label>
                     <input type="date" name="data" id="data" class="form-control" required />
-                    <div class="invalid-feedback">Por favor, informe a data.</div>
+                    <div class="invalid-feedback">Informe a data do depósito.</div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Registrar RDV</button>
+
+                <button type="submit" class="btn btn-primary w-100">Registrar Depósito</button>
             </form>
         </div>
+        {% endif %}
 
         <div class="card p-4">
-            <h3 class="mb-4">Filtrar Histórico</h3>
-            <form method="get" class="row g-3">
+            <h3 class="mb-4">Filtrar Depósitos</h3>
+            <form action="{{ url_for('deposito') }}" method="get" class="row g-3">
+                {% if tipo_usuario == 'admin' %}
+                    <div class="col-md-4">
+                        <label for="filtro_usuario" class="form-label">Técnico:</label>
+                        <select class="form-select" id="filtro_usuario" name="filtro_usuario">
+                            <option value="">Todos</option>
+                            {% for tecnico in tecnicos_disponiveis %}
+                                <option value="{{ tecnico.usuario }}" {% if filtro_usuario_selected == tecnico.usuario %}selected{% endif %}>
+                                    {{ tecnico.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="col-md-4">
+                        <label for="filtro_usuario_disabled" class="form-label">Técnico:</label>
+                        <input type="text" class="form-control" id="filtro_usuario_disabled" value="{{ usuario_logado_username }}" disabled>
+                    </div>
+                {% endif %}
+
                 <div class="col-md-4">
-                    <label for="filtro_data_inicio" class="form-label">Data início:</label>
-                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control" value="{{ filtro_data_inicio if filtro_data_inicio else '' }}">
+                    <label for="filtro_data_inicio" class="form-label">Data Início:</label>
+                    <input type="date" class="form-control" id="filtro_data_inicio" name="filtro_data_inicio" value="{{ filtro_data_inicio }}">
                 </div>
+
                 <div class="col-md-4">
-                    <label for="filtro_data_fim" class="form-label">Data fim:</label>
-                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control" value="{{ filtro_data_fim if filtro_data_fim else '' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="filtro_usuario" class="form-label">Técnico:</label>
-                    <select name="filtro_usuario" class="form-select" id="filtro_usuario">
-                        <option value="">Todos</option>
-                        {% for tecnico in tecnicos %}
-                            <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
-                        {% endfor %}
-                    </select>
+                    <label for="filtro_data_fim" class="form-label">Data Fim:</label>
+                    <input type="date" class="form-control" id="filtro_data_fim" name="filtro_data_fim" value="{{ filtro_data_fim }}">
                 </div>
                 <div class="col-12 d-flex gap-2">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
-                    <a href="{{ url_for('rdv') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
+                    <a href="{{ url_for('deposito') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
                 </div>
             </form>
         </div>
-        
-        <div class="row g-4">
-            <div class="col-lg-6">
-                {% if is_admin %}
-                    <div class="card p-4">
-                        <h3>Saldos dos Técnicos</h3>
-                        {% if saldos %}
-                            <ul class="list-group">
-                                {% for tecnico, saldo in saldos.items() %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ tecnico }}
-                                        <span>R$ {{ '%.2f'|format(saldo)|replace('.', ',') }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="alert alert-info text-center" role="alert">Nenhum saldo disponível.</div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="card p-4">
-                        <h3>Seu Saldo</h3>
-                        <p class="fs-4 fw-bold mb-0">R$ {{ '%.2f'|format(saldo)|replace('.', ',') }}</p>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-lg-6">
-                <div class="card p-4">
-                    <h3>Último Depósito</h3>
-                    {% if ultimo_deposito %}
-                        <p class="mb-0"><strong>Valor:</strong> R$ {{ "{:.2f}".format(ultimo_deposito.valor)|replace('.', ',') }}</p>
-                        <p class="mb-0"><strong>Data:</strong> {{ ultimo_deposito.data.strftime("%d/%m/%Y") }}</p>
-                    {% else %}
-                        <p class="text-muted mb-0">Nenhum depósito registrado.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
 
         <div class="d-none d-lg-block">
-            <h3 class="mb-4">Histórico de RDVs</h3>
-            {% if rdvs %}
-                <div class="table-responsive card p-4">
-                    <table class="table table-striped text-center align-middle mb-0">
-                        <thead>
-                            <tr>
-                                {% if is_admin %}
-                                    <th>Nome do Técnico</th>
-                                {% endif %}
-                                <th>Valor</th>
-                                <th>Descrição</th>
-                                <th>Data</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for rdv in rdvs %}
-                                <tr>
-                                    {% if is_admin %}
-                                        <td>{{ rdv[1] }}</td>
-                                    {% endif %}
-                                    <td>R$ {{ "%.2f"|format(rdv[2]|float)|replace('.', ',') }}</td>
-                                    <td>{{ rdv[3] }}</td>
-                                    <td>{{ rdv[4] }}</td>
-                                    <td class="text-center">
-                                        {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
-                                            <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
-                                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Excluir</button>
-                                            </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <h3 class="mb-4">Histórico de Depósitos</h3>
+            {% if depositos %}
+            <div class="table-responsive card p-4">
+                <table class="table table-striped text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Valor (R$)</th>
+                            <th>Data</th>
+                            {% if tipo_usuario == 'admin' %}
+                            <th>Depositado Por</th>
+                            <th class="text-center">Ações</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for deposito in depositos %}
+                        <tr>
+                            <td>{{ deposito.tecnico_nome_completo or deposito.tecnico_username }}</td>
+                            <td>R$ {{ "%.2f"|format(deposito.valor)|replace('.', ',') }}</td>
+                            <td>{{ deposito.data.strftime('%d/%m/%Y') }}</td>
+                            {% if tipo_usuario == 'admin' %}
+                            <td>{{ deposito.admin_nome_completo or deposito.admin_responsavel or 'N/A' }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('deletar_deposito', deposito_id=deposito.id) }}" onsubmit="return confirm('Confirma exclusão deste depósito?');" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Excluir</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
                 <div class="alert alert-info" role="alert">
-                    Nenhum RDV encontrado.
+                    Nenhum depósito encontrado.
                 </div>
             {% endif %}
         </div>
-        
+
         <div class="d-lg-none">
-            <h3 class="mb-4">Histórico de RDVs</h3>
-            {% if rdvs %}
-                <div class="registros-cards">
-                    {% for rdv in rdvs %}
-                        <div class="registro-card">
-                            <div class="card-header">
-                                <h5>RDV de R$ {{ "%.2f"|format(rdv[2]|float)|replace('.', ',') }}</h5>
-                                {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
-                                    <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
-                                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                            <div class="card-body row">
-                                {% if is_admin %}
-                                <div class="col-12">
-                                    <strong>Técnico:</strong>
-                                    <span>{{ rdv[1] }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="col-12">
-                                    <strong>Descrição:</strong>
-                                    <span>{{ rdv[3] }}</span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Data:</strong>
-                                    <span>{{ rdv[4] }}</span>
-                                </div>
-                            </div>
+            <h3 class="mb-4">Histórico de Depósitos</h3>
+            {% if depositos %}
+            <div class="registros-cards">
+                {% for deposito in depositos %}
+                    <div class="registro-card">
+                        <div class="card-header">
+                            <h5>Depósito de R$ {{ "%.2f"|format(deposito.valor)|replace('.', ',') }}</h5>
+                            <form method="POST" action="{{ url_for('deletar_deposito', deposito_id=deposito.id) }}" onsubmit="return confirm('Confirma exclusão deste depósito?');" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                            </form>
                         </div>
-                    {% endfor %}
-                </div>
+                        <div class="card-body row">
+                            <div class="col-12">
+                                <strong>Técnico:</strong>
+                                <span>{{ deposito.tecnico_nome_completo or deposito.tecnico_username }}</span>
+                            </div>
+                            <div class="col-12">
+                                <strong>Data:</strong>
+                                <span>{{ deposito.data.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                            {% if tipo_usuario == 'admin' %}
+                                <div class="col-12 mt-2">
+                                    <strong>Depositado Por:</strong>
+                                    <span>{{ deposito.admin_nome_completo or deposito.admin_responsavel or 'N/A' }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <div class="alert alert-info text-center" role="alert">
-                    Nenhum RDV encontrado para os filtros selecionados.
-                </div>
+            <div class="alert alert-info text-center" role="alert">
+                Nenhum depósito encontrado para os filtros selecionados.
+            </div>
             {% endif %}
         </div>
     </div>
@@ -597,7 +578,8 @@
             }
         });
     </script>
-    <script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
     // Bootstrap 5 form validation
     (() => {
         'use strict';
