@@ -1,123 +1,639 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Folha de Ponto - Geramaster</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#FFFFFF">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Paleta de Cores e Estilos Globais */
+        :root {
+            --cor-fundo: #F0F2F5; 
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa; 
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar - Menu Lateral */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+        }
+        
+        .sidebar-logo img {
+            max-width: 200px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--cor-nav-item-hover);
+            color: var(--cor-texto);
+        }
+        
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+        
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--cor-borda);
+        }
+        
+        .sidebar-bottom .nav-link {
+            color: var(--cor-subtitulo);
+        }
+        
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        /* Estilização dos blocos de conteúdo */
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+        
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #f8f9fa;
+            color: var(--cor-texto);
+            border: 1px solid #ced4da;
+        }
+
+        .form-control::placeholder, .form-select::placeholder {
+            color: #adb5bd;
+        }
+        
+        .form-label {
+            color: var(--cor-texto);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--cor-texto);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        .welcome-text small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--cor-subtitulo);
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .btn-primary {
+            background-color: var(--cor-primaria);
+            border-color: var(--cor-primaria);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--cor-primaria-hover);
+            border-color: var(--cor-primaria-hover);
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        
+        .excluir {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .excluir:hover {
+            color: #a71d2a;
+            transform: scale(1.1);
+        }
+        
+        .vencido {
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+        
+        /* Estilos da nova visualização (não-tabela) */
+        .registros-cards .registro-card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+        
+        .registros-cards .registro-card .card-header {
+            border-bottom: 1px solid var(--cor-borda);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .registros-cards .registro-card .card-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .registros-cards .registro-card .card-body div {
+            margin-bottom: 10px;
+        }
+
+        .registros-cards .registro-card .card-body strong {
+            display: block;
+            color: var(--cor-subtitulo);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .registros-cards .registro-card .card-body span {
+            display: block;
+            color: var(--cor-texto);
+            font-weight: 600;
+        }
+
+        /* Oculta a tabela e exibe os cartões apenas em telas pequenas */
+        .table-responsive {
+            display: block; 
+        }
+        .registros-cards {
+            display: none; 
+        }
+
+        @media (max-width: 991px) {
+            .table-responsive {
+                display: none;
+            }
+            .registros-cards {
+                display: block; 
+            }
+        }
+        
+        /* Estilos para a responsividade geral */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--cor-borda);
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .sidebar-logo img {
+                max-width: 120px;
+                margin-bottom: 0;
+            }
+            .nav-link {
+                display: none;
+            }
+            .sidebar-bottom {
+                margin-top: 0;
+                border-top: none;
+            }
+            .content {
+                padding: 20px;
+            }
+            .main-header {
+                justify-content: center;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h2 class="text-center mb-4">Geramaster App</h2>
-<div class="container">
-    <h1 class="my-4">Bem-vindo, {{ usuario }}</h1>
-    <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a>
-    <br>
-    <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
-    
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster">
+        </div>
 
+        <nav class="nav flex-column">
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
 
-    <h3>Registrar Horário</h3>
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
 
-    <!-- Registro imediato -->
-    <form method="POST" class="mb-3">
-        <input type="hidden" name="acao" value="registrar_agora">
-        <select name="tipo_registro" required class="form-select mb-2">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-        </select>
-        <button type="submit" class="btn btn-success">Registrar Agora</button>
-    </form>
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
 
-    <!-- Registro manual -->
-    <form method="POST" class="mb-3">
-        <input type="hidden" name="acao" value="registrar_manual">
-        <select name="tipo_registro_manual" required class="form-select mb-2">
-            <option value="entrada">Entrada</option>
-            <option value="saida">Saída</option>
-        </select>
-        <input type="date" name="data" required class="form-control mb-2">
-        <input type="time" name="hora" required class="form-control mb-2">
-        <button type="submit" class="btn btn-warning">Registrar Manualmente</button>
-    </form>
+            <a href="{{ url_for('dashboard') }}" class="nav-link active">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+            
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+            
+                <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                    <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+                </a>
+            
+            {% if tipo == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+        </nav>
+        
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
 
-    <h3>Histórico de Registros</h3>
+    <div class="content container">
+        <div class="main-header">
+            <h1 class="welcome-text">Folha de Ponto <small>Bem-vindo, {{ usuario }}</small></h1>
+        </div>
 
-    <form method="GET" class="mb-3">
-    <input type="date" name="filtro_data" class="form-control mb-2" placeholder="Filtrar por data">
-    
-    {% if tipo == 'admin' %}
-    <input type="text" name="filtro_usuario" class="form-control mb-2" placeholder="Filtrar por técnico">
-    {% endif %}
-    
-    <button type="submit" class="btn btn-info">Filtrar</button>
-</form>
+        <div class="card p-4">
+            <h3 class="mb-4">Registrar Horário</h3>
+            <form method="POST" class="mb-3">
+                <input type="hidden" name="acao" value="registrar_agora" />
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8 col-sm-12">
+                        <label for="tipo_registro" class="form-label">Tipo de Registro:</label>
+                        <select name="tipo_registro" id="tipo_registro" required class="form-select">
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                            <option value="entrada_janta">Entrada Janta</option>
+                            <option value="retorno_janta">Retorno Janta</option>
+                            <option value="saida_hora_extra">Saída Hora Extra</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-12">
+                        <button type="submit" class="btn btn-primary w-100">Registrar Agora</button>
+                    </div>
+                </div>
+            </form>
 
+            <form method="POST" class="mb-3">
+                <input type="hidden" name="acao" value="registrar_manual" />
+                <input type="hidden" name="latitude" id="latitude_manual">
+                <input type="hidden" name="longitude" id="longitude_manual">
+                <h6 class="mt-4 mb-3">Registro Manual</h6>
+                <div class="row g-3">
+                    <div class="col-md-6 mb-2">
+                        <label for="tipo_registro_manual" class="form-label">Tipo de Registro:</label>
+                        <select name="tipo_registro_manual" id="tipo_registro_manual" required class="form-select">
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                            <option value="entrada_janta">Entrada Janta</option>
+                            <option value="retorno_janta">Retorno Janta</option>
+                            <option value="saida_hora_extra">Saída Hora Extra</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label for="data" class="form-label">Data:</label>
+                        <input type="date" name="data" id="data" required class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label for="hora" class="form-label">Hora:</label>
+                        <input type="time" name="hora" id="hora" required class="form-control" />
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary w-100">Registrar Manualmente</button>
+                </div>
+            </form>
+        </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                {% if tipo == 'admin' %}
-                <th>Técnico</th>
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Registros</h3>
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4 col-sm-6">
+                    <label for="filtro_data" class="form-label">Filtrar por Data:</label>
+                    <input type="date" name="filtro_data" id="filtro_data" class="form-control" value="{{ filtro_data or '' }}" />
+                </div>
+                {% if tipo == 'admin' or tipo == 'tecnico' %}
+                <div class="col-md-4 col-sm-6">
+                    <label for="filtro_usuario" class="form-label">Filtrar por Técnico:</label>
+                    <select name="filtro_usuario" id="filtro_usuario" class="form-select">
+                        <option value="">Todos</option>
+                        {% for tecnico in tecnicos %}
+                            <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 {% endif %}
-                <th>Tipo</th>
-                <th>Data</th>
-                <th>Hora</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in registros %}
-            <tr>
-                {% if tipo == 'admin' %}
-                <td>{{ r[0] }}</td>  <!-- nome técnico -->
-                <td>
-                    {% if r[1] == 'entrada' %}
-                        Entrada
-                    {% elif r[1] == 'saida' %}
-                        Saída
-                    {% else %}
-                        {{ r[1] }}
+                <div class="col-md-4 col-sm-6">
+                    <label for="data_inicio" class="form-label">Data Início:</label>
+                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control" value="{{ filtro_data_inicio or '' }}"/>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="data_fim" class="form-label">Data Fim:</label>
+                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control" value="{{ filtro_data_fim or '' }}"/>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="d-none d-lg-block">
+            <h3 class="mb-4">Histórico de Registros</h3>
+            <div class="table-responsive card p-4">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead>
+                        <tr>
+                            {% if tipo == 'admin' %}
+                                <th>Técnico</th>
+                            {% endif %}
+                            <th>Data</th>
+                            <th>Entrada</th>
+                            <th>Entrada Almoço</th>
+                            <th>Retorno Almoço</th>
+                            <th>Saída</th>
+                            <th>Entrada Janta</th>
+                            <th>Retorno Janta</th>
+                            <th>Saída Hora Extra</th>
+                            {% if tipo == 'admin' %}
+                                <th>Localização</th>
+                            {% endif %}
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for (usuario_registro, data), pontos in registros_agrupados.items() %}
+                        <tr>
+                            {% if tipo == 'admin' %}
+                                <td>{{ usuario_registro }}</td>
+                            {% endif %}
+                            <td>{{ data.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ pontos.entrada.hora if pontos.entrada else '---' }}</td>
+                            <td>{{ pontos.entrada_almoco.hora }}</td>
+                            <td>{{ pontos.retorno_almoco.hora }}</td>
+                            <td>{{ pontos.saida.hora if pontos.saida else '---' }}</td>
+                            <td>{{ pontos.entrada_janta.hora if pontos.entrada_janta else '---' }}</td>
+                            <td>{{ pontos.retorno_janta.hora if pontos.retorno_janta else '---' }}</td>
+                            <td>{{ pontos.saida_hora_extra.hora if pontos.saida_hora_extra else '---' }}</td>
+                            {% if tipo == 'admin' %}
+                                <td>
+                                    <select onchange="if(this.value) window.open(this.value, '_blank');" class="form-select form-select-sm">
+                                        <option selected disabled>Ver Mapa</option>
+                                        {% if pontos.entrada and pontos.entrada.latitude and pontos.entrada.longitude %}
+                                        <option value="http://googleusercontent.com/maps.google.com/?q={{ pontos.entrada.latitude }},{{ pontos.entrada.longitude }}">Entrada</option>
+                                        {% endif %}
+                                        {% if pontos.saida and pontos.saida.latitude and pontos.saida.longitude %}
+                                        <option value="http://googleusercontent.com/maps.google.com/?q={{ pontos.saida.latitude }},{{ pontos.saida.longitude }}">Saída</option>
+                                        {% endif %}
+                                        {% if pontos.entrada_janta and pontos.entrada_janta.latitude and pontos.entrada_janta.longitude %}
+                                        <option value="http://googleusercontent.com/maps.google.com/?q={{ pontos.entrada_janta.latitude }},{{ pontos.entrada_janta.longitude }}">Entrada Janta</option>
+                                        {% endif %}
+                                        {% if pontos.retorno_janta and pontos.retorno_janta.latitude and pontos.retorno_janta.longitude %}
+                                        <option value="http://googleusercontent.com/maps.google.com/?q={{ pontos.retorno_janta.latitude }},{{ pontos.retorno_janta.longitude }}">Retorno Janta</option>
+                                        {% endif %}
+                                        {% if pontos.saida_hora_extra and pontos.saida_hora_extra.latitude and pontos.saida_hora_extra.longitude %}
+                                        <option value="http://googleusercontent.com/maps.google.com/?q={{ pontos.saida_hora_extra.latitude }},{{ pontos.saida_hora_extra.longitude }}">Saída Hora Extra</option>
+                                        {% endif %}
+                                    </select>
+                                </td>
+                            {% endif %}
+                            <td>
+                                <form action="{{ url_for('excluir_dia', data=data, usuario=filtro_usuario if tipo == 'admin' else None) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir todos os registros deste dia?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-lg-none">
+            <h3 class="mb-4">Histórico de Registros</h3>
+            {% for (usuario_registro, data), pontos in registros_agrupados.items() %}
+            <div class="registro-card mb-3">
+                <div class="card-header">
+                    <h5>Folha de Ponto - {{ data.strftime('%d/%m/%Y') }}</h5>
+                    {% if tipo == 'admin' %}
+                        <small class="text-muted">{{ usuario_registro }}</small>
                     {% endif %}
-                </td>
-                <td>{{ r[2] }}</td>
-                <td>{{ r[3] }}</td>
-                <td>
-                    <a href="{{ url_for('excluir_registro', id=r[4]) }}" class="btn btn-danger btn-sm">Excluir</a>
-                </td>
-                {% else %}
-                <td>
-                    {% if r[0] == 'entrada' %}
-                        Entrada
-                    {% elif r[0] == 'saida' %}
-                        Saída
-                    {% else %}
-                        {{ r[0] }}
+                    <form action="{{ url_for('excluir_dia', data=data, usuario=filtro_usuario if tipo == 'admin' else None) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir todos os registros deste dia?');">
+                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                    </form>
+                </div>
+                <div class="card-body row">
+                    <div class="col-6">
+                        <strong>Entrada:</strong>
+                        <span>{{ pontos.entrada.hora if pontos.entrada else '---' }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Entrada Almoço:</strong>
+                        <span>{{ pontos.entrada_almoco.hora }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Retorno Almoço:</strong>
+                        <span>{{ pontos.retorno_almoco.hora }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Saída:</strong>
+                        <span>{{ pontos.saida.hora if pontos.saida else '---' }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Entrada Janta:</strong>
+                        <span>{{ pontos.entrada_janta.hora if pontos.entrada_janta else '---' }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Retorno Janta:</strong>
+                        <span>{{ pontos.retorno_janta.hora if pontos.retorno_janta else '---' }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Saída Hora Extra:</strong>
+                        <span>{{ pontos.saida_hora_extra.hora if pontos.saida_hora_extra else '---' }}</span>
+                    </div>
+                    {% if tipo == 'admin' %}
+                        <div class="col-12 mt-3">
+                            <h6 class="text-muted">Localização</h6>
+                            {% if pontos.entrada and pontos.entrada.latitude and pontos.entrada.longitude %}
+                                <a href="http://googleusercontent.com/maps.google.com/?q={{ pontos.entrada.latitude }},{{ pontos.entrada.longitude }}" target="_blank" class="btn btn-secondary btn-sm mb-2 w-100">Entrada</a>
+                            {% endif %}
+                            {% if pontos.saida and pontos.saida.latitude and pontos.saida.longitude %}
+                                <a href="http://googleusercontent.com/maps.google.com/?q={{ pontos.saida.latitude }},{{ pontos.saida.longitude }}" target="_blank" class="btn btn-secondary btn-sm mb-2 w-100">Saída</a>
+                            {% endif %}
+                            {% if pontos.entrada_janta and pontos.entrada_janta.latitude and pontos.entrada_janta.longitude %}
+                                <a href="http://googleusercontent.com/maps.google.com/?q={{ pontos.entrada_janta.latitude }},{{ pontos.entrada_janta.longitude }}" target="_blank" class="btn btn-secondary btn-sm mb-2 w-100">Entrada Janta</a>
+                            {% endif %}
+                            {% if pontos.retorno_janta and pontos.retorno_janta.latitude and pontos.retorno_janta.longitude %}
+                                <a href="http://googleusercontent.com/maps.google.com/?q={{ pontos.retorno_janta.latitude }},{{ pontos.retorno_janta.longitude }}" target="_blank" class="btn btn-secondary btn-sm mb-2 w-100">Retorno Janta</a>
+                            {% endif %}
+                            {% if pontos.saida_hora_extra and pontos.saida_hora_extra.latitude and pontos.saida_hora_extra.longitude %}
+                                <a href="http://googleusercontent.com/maps.google.com/?q={{ pontos.saida_hora_extra.latitude }},{{ pontos.saida_hora_extra.longitude }}" target="_blank" class="btn btn-secondary btn-sm mb-2 w-100">Saída Hora Extra</a>
+                            {% endif %}
+                        </div>
                     {% endif %}
-                </td>
-                <td>{{ r[1] }}</td>
-                <td>{{ r[2] }}</td>
-                <td>
-                    <a href="{{ url_for('excluir_registro', id=r[3]) }}" class="btn btn-danger btn-sm">Excluir</a>
-                </td>
-                {% endif %}
-            </tr>
+                </div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+        </div>
+        
+        <div class="card p-4 text-center">
+             <a href="{{ url_for('exportar_pdf') }}?filtro_data_inicio={{ filtro_data_inicio or '' }}&filtro_data_fim={{ filtro_data_fim or '' }}&filtro_usuario={{ filtro_usuario or '' }}&filtro_data={{ filtro_data or '' }}" class="btn btn-primary">Exportar PDF</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+    <script src="/offline-sync.js" defer></script>
+    <script>
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                // Para registro automático
+                const lat = document.getElementById('latitude');
+                const long = document.getElementById('longitude');
+
+                if (lat && long) {
+                    lat.value = position.coords.latitude;
+                    long.value = position.coords.longitude;
+                }
+
+                // Para registro manual
+                const latManual = document.getElementById('latitude_manual');
+                const longManual = document.getElementById('longitude_manual');
+
+                if (latManual && longManual) {
+                    latManual.value = position.coords.latitude;
+                    longManual.value = position.coords.longitude;
+                }
+            });
+        }
+    </script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            if (form.querySelector('input[name="acao"][value="registrar_agora"]')) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            form.querySelector('input[name="latitude"]').value = position.coords.latitude;
+                            form.querySelector('input[name="longitude"]').value = position.coords.longitude;
+                            form.submit();
+                        }, function(error) {
+                            alert('Erro ao obter localização: ' + error.message);
+                            form.submit();
+                        });
+                    } else {
+                        alert('Geolocalização não suportada pelo navegador.');
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
-
-<style>
-.btn-voltar {
-    display: inline-block;
-    margin: 10px 0;
-    padding: 8px 15px;
-    background-color: #007BFF;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-}
-.btn-voltar:hover {
-    background-color: #0056b3;
-}
-</style>

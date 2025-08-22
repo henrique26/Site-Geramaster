@@ -4,7 +4,7 @@
     <script src="/register-sw.js" defer></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Menu Principal - Geramaster</title>
+    <title>Agenda Telefônica - Geramaster</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="manifest" href="/static/manifest.json" />
@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 
     <style>
-        /* Paleta de Cores e Estilos Globais */
+        /* Insira aqui o CSS da sidebar e do layout principal que j\u00E1 estamos usando */
         :root {
             --cor-fundo: #F0F2F5;
             --cor-primaria: #e60000;
@@ -28,17 +28,14 @@
             --cor-nav-item-hover: #f1f3f5;
             --cor-card-fundo: #f8f9fa;
         }
-
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--cor-fundo);
             color: var(--cor-texto);
             min-height: 100vh;
             display: flex;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Adicionado para evitar a barra de rolagem horizontal da p\u00E1gina inteira */
         }
-
-        /* Sidebar - Menu Lateral */
         .sidebar {
             width: 280px;
             min-width: 280px;
@@ -52,12 +49,10 @@
             height: 100vh;
             z-index: 1000;
         }
-
         .sidebar-logo img {
             max-width: 200px;
             margin-bottom: 40px;
         }
-
         .nav-link {
             display: flex;
             align-items: center;
@@ -69,36 +64,29 @@
             text-decoration: none;
             transition: all 0.2s ease;
         }
-
         .nav-link i {
             font-size: 1.25rem;
             margin-right: 15px;
             width: 25px;
             text-align: center;
         }
-
         .nav-link:hover {
             background-color: var(--cor-nav-item-hover);
             color: var(--cor-texto);
         }
-
         .nav-link.active {
             background-color: rgba(230, 0, 0, 0.1);
             color: var(--cor-primaria);
             font-weight: 600;
         }
-
         .sidebar-bottom {
             margin-top: auto;
             padding-top: 20px;
             border-top: 1px solid var(--cor-borda);
         }
-
         .sidebar-bottom .nav-link {
             color: var(--cor-subtitulo);
         }
-
-        /* Conteúdo Principal */
         .content {
             flex-grow: 1;
             padding: 40px;
@@ -107,8 +95,6 @@
             gap: 30px;
             width: 100%;
         }
-
-        /* Estilização dos blocos de conteúdo */
         .card {
             background-color: var(--cor-card-fundo);
             border: 1px solid var(--cor-borda);
@@ -116,60 +102,35 @@
             border-radius: 8px;
             padding: 25px;
         }
-        
-        /* Estilos específicos para os alertas */
-        .alert {
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-color: #ffeeba;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
-        }
-
         .form-control, .form-select, .form-control:focus, .form-select:focus {
             background-color: #f8f9fa;
             color: var(--cor-texto);
             border: 1px solid #ced4da;
         }
-
         .form-control::placeholder, .form-select::placeholder {
             color: #adb5bd;
         }
-
         .form-label {
             color: var(--cor-texto);
             font-weight: 500;
             margin-bottom: 0.5rem;
         }
-
         h1, h2, h3, h4 {
             color: var(--cor-texto);
             font-weight: 600;
             margin-bottom: 1.5rem;
         }
-
         .main-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .welcome-text {
             font-size: 1.75rem;
             font-weight: 600;
             margin-bottom: 0;
         }
-
         .welcome-text small {
             font-size: 1rem;
             font-weight: 400;
@@ -177,45 +138,6 @@
             display: block;
             margin-top: 5px;
         }
-        
-        /* Novo estilo para os cards de atalho */
-        .shortcut-card {
-            background-color: var(--cor-card-fundo);
-            border: 1px solid var(--cor-borda);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: var(--cor-texto);
-            display: block;
-            height: 100%;
-        }
-        
-        .shortcut-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .shortcut-card .icon {
-            font-size: 3rem;
-            color: var(--cor-primaria);
-            margin-bottom: 15px;
-        }
-        
-        .shortcut-card h4 {
-            margin-bottom: 0;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .card-header-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Responsividade para a sidebar */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -251,16 +173,25 @@
                 text-align: center;
             }
         }
+
+        /* Removido o 'white-space: nowrap' para permitir a quebra de linha do texto e evitar a rolagem horizontal */
+        .table th, .table td {
+            border-right: 1px solid #dee2e6; /* Adiciona a borda direita para as divisórias */
+        }
+        .table th:last-child, .table td:last-child {
+            border-right: none; /* Remove a borda da \u00FAltima coluna */
+        }
     </style>
 </head>
 <body>
+    <!-- Barra de navegação lateral -->
     <div class="sidebar">
         <div class="sidebar-logo">
             <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
         </div>
 
         <nav class="nav flex-column">
-            <a href="{{ url_for('menu') }}" class="nav-link active">
+            <a href="{{ url_for('menu') }}" class="nav-link">
                 <i class="fas fa-home"></i> <span>Menu Principal</span>
             </a>
             <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
@@ -286,8 +217,9 @@
                 <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
                     <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
                 </a>
+            
             {% if tipo == 'admin' %}
-            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link active">
                 <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
             </a>
             {% endif %}
@@ -300,103 +232,116 @@
         </div>
     </div>
 
-    <div class="content container">
+    <!-- Conte\u00FAdo principal -->
+    <div class="content container-fluid">
         <div class="main-header">
-            <h1 class="welcome-text">Olá, {{ usuario }}! <br><small>Bem-vindo ao sistema Geramaster.</small></h1>
+            <h1 class="welcome-text">Agenda Telefônica</h1>
         </div>
 
-
-        <div class="card p-4">
-            
-            
-            {% if alertas %}
-                <div class="alert alert-warning mt-3" role="alert">
-                    <h5 class="alert-heading">Alerta! Saldo RDV Baixo!</h5>
-                    <ul class="mb-0 ps-3">
-                        {% for usuario_alerta, nome, saldo in alertas %}
-                            <li>⚠️ Técnico {{ nome }} está com saldo baixo: R${{ "%.2f"|format(saldo) }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            {% if user_type == 'admin' and avisos_troca_oleo %}
-                <div class="alert alert-danger mt-3" role="alert">
-                    <h5 class="alert-heading">⚠️ Atenção! Troca de Óleo/Filtro Próxima:</h5>
-                    <ul class="mb-0 ps-3">
-                        {% for aviso in avisos_troca_oleo %}
-                            <li>
-                                {{ aviso.placa }}: Faltam {{ aviso.km_restante | int }} km para a próxima troca.
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            
-
-        </div>
-
-
-        <div class="card p-4">
-            <h3 class="mb-4">Acesso Rápido</h3>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <div class="col">
-                    <a href="{{ url_for('rdv') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
-                        <h4>Registrar RDV</h4>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{{ url_for('controle_veiculos') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-car-side"></i></div>
-                        <h4>Controle dos Veículos</h4>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{{ url_for('deposito') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-money-check-alt"></i></div>
-                        <h4>Registrar Depósito</h4>
-                    </a>
-                </div>
+        <!-- Se\u00E7\u00E3o de Mensagens -->
+        {% if mensagem %}
+            <div class="alert alert-success" role="alert">
+                {{ mensagem }}
             </div>
+        {% endif %}
+
+        <!-- Card de Inser\u00E7\u00E3o de Contato -->
+        <div class="card p-4">
+            <h3 class="mb-4">Adicionar Novo Contato</h3>
+            <form action="{{ url_for('agenda_telefonica') }}" method="post">
+                <!-- Campo oculto para identificar o formul\u00E1rio de adi\u00E7\u00E3o -->
+                <input type="hidden" name="add_contact" value="1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="nome_cliente" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="nome_cliente" name="nome_cliente" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="nome_responsavel" class="form-label">Nome do Responsável</label>
+                        <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel">
+                    </div>
+                    <div class="col-12">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" id="telefone" name="telefone">
+                    </div>
+                    <div class="col-12">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+                    <div class="col-12 mt-4 text-center">
+                        <button type="submit" class="btn btn-primary">Adicionar Contato</button>
+                    </div>
+                </div>
+            </form>
         </div>
 
-        
+        <!-- Card de Filtro -->
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Contatos</h3>
+            <form action="{{ url_for('agenda_telefonica') }}" method="post">
+                <!-- Campo oculto para identificar o formul\u00E1rio de filtro -->
+                <input type="hidden" name="filter_contacts" value="1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="filtro_cliente" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="filtro_cliente" name="filtro_cliente">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="filtro_responsavel" class="form-label">Nome do Responsável</label>
+                        <input type="text" class="form-control" id="filtro_responsavel" name="filtro_responsavel">
+                    </div>
+                    <div class="col-12 mt-4 text-center">
+                        <button type="submit" class="btn btn-secondary">Filtrar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Card da Lista de Contatos -->
+        <div class="card p-4">
+            <h3 class="mb-4">Lista de Contatos</h3>
+            {% if contatos %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Responsável</th>
+                            <th>Telefone</th>
+                            <th>Observações</th>
+                            <th>Data de Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contato in contatos %}
+                        <tr>
+                            <td>{{ contato.nome_cliente }}</td>
+                            <td>{{ contato.nome_responsavel }}</td>
+                            <td>{{ contato.telefone }}</td>
+                            <td>{{ contato.observacoes }}</td>
+                            <td>{{ contato.data_criacao }}</td>
+                            <td>
+                                <form action="{{ url_for('excluir_contato', contato_id=contato.id) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este contato?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                Nenhum contato encontrado.
+            </div>
+            {% endif %}
+        </div>
+
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-        // Ajuste o caminho se seu service-worker.js não estiver na raiz do domínio
-        navigator.serviceWorker.register('/static/service-worker.js') // ou '/static/service-worker.js'
-        .then(function(registration) {
-            console.log('Service Worker registrado com sucesso:', registration);
-            return registration;
-        })
-        // ... restante do código para pedir permissão e obter subscription ...
-        .catch(function(error) {
-            console.error('Erro no registro do Service Worker ou Push:', error);
-        });
-    } else {
-        console.warn('Este navegador não suporta Service Workers ou Push API.');
-    }
-
-    // Função auxiliar urlBase64ToUint8Array (mantê-la)
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
-</script>
 </body>
 </html>
