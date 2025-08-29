@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <script src="/register-sw.js" defer></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDV - Geramaster</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" href="/static/icons/icon-192.png">
-    <meta name="theme-color" content="#FFFFFF">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Propostas - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
     <style>
     /* Paleta de Cores e Estilos Globais */
     :root {
@@ -341,14 +342,13 @@
     }
 </style>
 </head>
-
 <body>
     <button class="menu-toggle">
         <i class="fas fa-bars"></i>
     </button>
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
         </div>
 
         <nav class="nav flex-column">
@@ -359,7 +359,7 @@
                 <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
             </a>
 
-            <a href="{{ url_for('rdv') }}" class="nav-link active">
+            <a href="{{ url_for('rdv') }}" class="nav-link">
                 <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
             </a>
 
@@ -375,7 +375,7 @@
                 <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
             </a>
             
-                <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link active">
                     <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
                 </a>
             
@@ -385,7 +385,7 @@
             </a>
             {% endif %}
         </nav>
-        
+
         <div class="sidebar-bottom">
             <a href="{{ url_for('logout') }}" class="nav-link">
                 <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
@@ -395,186 +395,118 @@
 
     <div class="content container">
         <div class="main-header">
-            <h1 class="welcome-text">RDV - Relatório de Despesas de Viagem</h1>
+            <h1 class="welcome-text">Propostas</h1>
         </div>
-
+        
         <div class="card p-4">
-            <h3 class="mb-4">Registrar Novo RDV</h3>
-            <form method="POST" class="needs-validation" novalidate>
-                <div class="mb-3">
-                    <label for="valor" class="form-label">Valor</label>
-                    <input type="text" name="valor" id="valor" class="form-control" placeholder="Ex: 50,00 ou 50.00" required pattern="[0-9]+([,\.][0-9]{1,2})?" />
-                    <div class="invalid-feedback">Por favor, informe um valor válido.</div>
+            <h3>Filtrar Propostas</h3>
+            <form method="GET" class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <label for="observacoes" class="form-label">Nº Proposta</label>
+                    <input type="text" class="form-control" id="observacoes" name="observacoes" value="{{ search_observacoes }}" placeholder="Ex: GMS-2023-1234">
                 </div>
-                <div class="mb-3">
-                    <label for="descricao" class="form-label">Descrição</label>
-                    <input type="text" name="descricao" id="descricao" class="form-control" required />
-                    <div class="invalid-feedback">Por favor, informe uma descrição.</div>
+                <div class="col-md-6 col-lg-3">
+                    <label for="cliente" class="form-label">Cliente</label>
+                    <input type="text" class="form-control" id="cliente" name="cliente" value="{{ search_cliente }}" placeholder="Nome do Cliente">
                 </div>
-                <div class="mb-3">
+                <div class="col-md-6 col-lg-3">
                     <label for="data" class="form-label">Data</label>
-                    <input type="date" name="data" id="data" class="form-control" required />
-                    <div class="invalid-feedback">Por favor, informe a data.</div>
+                    <input type="date" class="form-control" id="data" name="data" value="{{ search_data }}">
                 </div>
-                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Registrar RDV</button>
-            </form>
-        </div>
-
-        
-        
-        <div class="row g-4">
-            <div class="col-lg-6">
-                {% if is_admin %}
-                    <div class="card p-4">
-                        <h3>Saldos dos Técnicos</h3>
-                        {% if saldos %}
-                            <ul class="list-group">
-                                {% for tecnico, saldo in saldos.items() %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ tecnico }}
-                                        <span>R$ {{ '%.2f'|format(saldo)|replace('.', ',') }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="alert alert-info text-center" role="alert">Nenhum saldo disponível.</div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="card p-4">
-                        <h3>Seu Saldo</h3>
-                        <p class="fs-4 fw-bold mb-0">R$ {{ '%.2f'|format(saldo)|replace('.', ',') }}</p>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-lg-6">
-                <div class="card p-4">
-                    <h3>Último Depósito</h3>
-                    {% if ultimo_deposito %}
-                        <p class="mb-0"><strong>Valor:</strong> R$ {{ "{:.2f}".format(ultimo_deposito.valor)|replace('.', ',') }}</p>
-                        <p class="mb-0"><strong>Data:</strong> {{ ultimo_deposito.data.strftime("%d/%m/%Y") }}</p>
-                    {% else %}
-                        <p class="text-muted mb-0">Nenhum depósito registrado.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="card p-4">
-            <h3 class="mb-4">Filtrar Histórico</h3>
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="filtro_data_inicio" class="form-label">Data início:</label>
-                    <input type="date" name="filtro_data_inicio" id="filtro_data_inicio" class="form-control" value="{{ filtro_data_inicio if filtro_data_inicio else '' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="filtro_data_fim" class="form-label">Data fim:</label>
-                    <input type="date" name="filtro_data_fim" id="filtro_data_fim" class="form-control" value="{{ filtro_data_fim if filtro_data_fim else '' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="filtro_usuario" class="form-label">Técnico:</label>
-                    <select name="filtro_usuario" class="form-select" id="filtro_usuario">
-                        <option value="">Todos</option>
-                        {% for tecnico in tecnicos %}
-                            <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
+                <div class="col-md-6 col-lg-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        {% for option in status_options %}
+                            <option value="{{ option }}" {% if option == search_status %}selected{% endif %}>{{ option }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-12 d-flex gap-2 align-items-center">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
-                    <a href="{{ url_for('rdv') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
-                    <a href="{{ url_for('exportar_rdv_pdf', filtro_data_inicio=filtro_data_inicio, filtro_data_fim=filtro_data_fim, filtro_usuario=filtro_usuario) }}" class="btn btn-success" target="_blank">
-                        <i class="fas fa-file-pdf"></i> Exportar PDF
-                    </a>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    <a href="{{ url_for('listar_pedidos_bling') }}" class="btn btn-secondary flex-grow-1"><i class="fas fa-eraser"></i> Limpar</a>
                 </div>
             </form>
         </div>
 
-        <div class="d-none d-lg-block">
-            <h3 class="mb-4">Histórico de RDVs</h3>
-            {% if rdvs %}
-                <div class="table-responsive card p-4">
-                    <table class="table table-striped text-center align-middle mb-0">
-                        <thead>
-                            <tr>
-                                {% if is_admin %}
-                                    <th>Nome do Técnico</th>
-                                {% endif %}
-                                <th>Valor</th>
-                                <th>Descrição</th>
-                                <th>Data</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for rdv in rdvs %}
-                                <tr>
-                                    {% if is_admin %}
-                                        <td>{{ rdv[1] }}</td>
-                                    {% endif %}
-                                    <td>R$ {{ "%.2f"|format(rdv[2]|float)|replace('.', ',') }}</td>
-                                    <td>{{ rdv[3] }}</td>
-                                    <td>{{ rdv[4] }}</td>
-                                    <td class="text-center">
-                                        {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
-                                            <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
-                                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Excluir</button>
-                                            </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-info" role="alert">
-                    Nenhum RDV encontrado.
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="d-lg-none">
-            <h3 class="mb-4">Histórico de RDVs</h3>
-            {% if rdvs %}
-                <div class="registros-cards">
-                    {% for rdv in rdvs %}
-                        <div class="registro-card">
-                            <div class="card-header">
-                                <h5>RDV de R$ {{ "%.2f"|format(rdv[2]|float)|replace('.', ',') }}</h5>
-                                {% if is_admin or (tipo == 'tecnico' and usuario == rdv[1]) %}
-                                    <form method="POST" action="{{ url_for('delete_rdv', rdv_id=rdv[0]) }}" onsubmit="return confirm('Confirma a exclusão?');">
-                                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                                    </form>
-                                {% endif %}
+        <div>
+            <h3>Resultados da Pesquisa</h3>
+            {% if pedidos %}
+                {% for pedido in pedidos %}
+                <div class="proposta-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5>Proposta #{{ pedido.numero if pedido.numero is not none else 'N/A' }}</h5>
+                        <a href="{{ pedido.link_bling }}" target="_blank" class="bling-link"><i class="fas fa-external-link-alt"></i> Ver no Bling</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>ID Bling:</strong>
+                                <span>{{ pedido.bling_pedido_id }}</span>
                             </div>
-                            <div class="card-body row">
-                                {% if is_admin %}
-                                <div class="col-12">
-                                    <strong>Técnico:</strong>
-                                    <span>{{ rdv[1] }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="col-12">
-                                    <strong>Descrição:</strong>
-                                    <span>{{ rdv[3] }}</span>
-                                </div>
-                                <div class="col-12">
-                                    <strong>Data:</strong>
-                                    <span>{{ rdv[4] }}</span>
-                                </div>
+                            <div class="col-md-6">
+                                <strong>Cliente:</strong>
+                                <span>{{ pedido.nome_cliente if pedido.nome_cliente is not none and pedido.nome_cliente|length > 0 else 'Cliente Não Informado' }}</span>
                             </div>
                         </div>
-                    {% endfor %}
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <strong>Data:</strong>
+                                <span>{{ pedido.data_pedido.strftime('%Y-%m-%d') if pedido.data_pedido else 'N/A' }}</span>
+                            </div>
+                            {% if not is_tech %}
+                            <div class="col-md-6">
+                                <strong>Valor Total:</strong>
+                                <span>R$ {{ "%.2f"|format(pedido.valor_total if pedido.valor_total is not none else 0.00) }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <strong>Status:</strong>
+                                <span>
+                                    {% if pedido.situacao_pedido_descricao is not none and pedido.situacao_pedido_descricao|length > 0 %}
+                                        {{ pedido.situacao_pedido_descricao }}
+                                    {% else %}
+                                        N/A (ID: {{ pedido.situacao_pedido_id if pedido.situacao_pedido_id is not none else 'N/A' }})
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Última Atualização:</strong>
+                                <span>{{ pedido.data_ultima_atualizacao.strftime('%Y-%m-%d %H:%M:%S') if pedido.data_ultima_atualizacao else 'N/A' }}</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <strong>Observações:</strong>
+                            <p>{{ pedido.observacoes if pedido.observacoes is not none and pedido.observacoes|length > 0 else 'Nenhuma observação.' }}</p>
+                        </div>
+                        <hr>
+                        <h5>Itens do Pedido:</h5>
+                        {% if pedido.itens %}
+                        <ul class="item-list">
+                            {% for item in pedido.itens %}
+                            <li>
+                                <strong>{{ item.descricao_item if item.descricao_item is not none and item.descricao_item|length > 0 else 'Item sem Descrição' }}</strong> 
+                                {% if item.codigo_item %}({{ item.codigo_item }}){% endif %}<br>
+                                Qtd: {{ "%.2f"|format(item.quantidade|default(0)) }}
+                                {% if not is_tech %}
+                                | V. Unit: R$ {{ "%.2f"|format(item.valor_unitario if item.valor_unitario is not none else 0) }}
+                                | Total Item: R$ {{ "%.2f"|format(item.valor_total_item if item.valor_total_item is not none else 0) }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="no-items">Nenhum item encontrado para esta proposta.</p>
+                        {% endif %}
+                    </div>
                 </div>
+                {% endfor %}
             {% else %}
-                <div class="alert alert-info text-center" role="alert">
-                    Nenhum RDV encontrado para os filtros selecionados.
-                </div>
+                <div class="no-orders">Nenhuma proposta encontrada com os filtros aplicados.</div>
             {% endif %}
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Bootstrap 5 form validation
@@ -602,7 +534,8 @@
             }
         });
     </script>
-    <script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
     // Bootstrap 5 form validation
     (() => {
         'use strict';
