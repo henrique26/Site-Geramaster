@@ -1,43 +1,164 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Login - Geramaster</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Geramaster</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#FFFFFF">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Paleta de Cores: Limpa e Refinada */
+        :root {
+            --cor-fundo: #F8F9FA; /* Fundo cinza muito claro */
+            --cor-primaria: #e60000; /* Vermelho vibrante da sua logo */
+            --cor-primaria-hover: #cc0000; /* Versão um pouco mais escura */
+            --cor-texto: #212529; /* Cinza escuro para boa legibilidade */
+            --cor-subtitulo: #6c757d; /* Cinza médio para textos secundários */
+            --cor-borda: #dee2e6; /* Borda clara para os inputs */
+            --cor-input-fundo: #FFFFFF;
+            --cor-placeholder: #adb5bd;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container-login {
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .logo-container {
+            margin-bottom: 40px;
+        }
+        
+        .logo-container img {
+            max-width: 250px;
+        }
+
+        .login-title {
+            font-size: 2.25rem;
+            font-weight: 600; /* Mais peso para um título impactante */
+            margin-bottom: 5px;
+            color: var(--cor-texto);
+        }
+
+        .login-subtitle {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--cor-subtitulo);
+            margin-bottom: 30px;
+        }
+
+        .form-control {
+            background-color: var(--cor-input-fundo);
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px; /* Bordas arredondadas para um visual suave */
+            color: var(--cor-texto);
+            padding: 12px 15px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: var(--cor-primaria);
+            box-shadow: 0 0 0 0.2rem rgba(230, 0, 0, 0.15); /* Sombra sutil ao focar */
+            outline: none;
+        }
+        
+        .form-control::placeholder {
+            color: var(--cor-placeholder);
+            opacity: 1;
+        }
+        
+        .form-label {
+            /* Deixa o label em uma linha acima, mas com um estilo mais minimalista */
+            display: block;
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--cor-texto);
+            margin-bottom: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--cor-primaria);
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 15px 30px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(230, 0, 0, 0.2); /* Sombra que destaca o botão */
+        }
+
+        .btn-primary:hover {
+            background-color: var(--cor-primaria-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 0, 0, 0.3);
+        }
+        
+        .alert {
+            font-size: 0.9em;
+            padding: 12px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
-<body class="container mt-5">
 
-  <div class="row justify-content-center">
-    <div class="col-md-4">
-      <h2 class="text-center mb-4">Geramaster App</h2>
-      {% if erro %}
-      <div class="alert alert-danger text-center">{{ erro }}</div>
-      {% endif %}
-      <form method="POST">
-        <div class="mb-3">
-          <label for="usuario" class="form-label">Usuário</label>
-          <input type="text" name="usuario" id="usuario" class="form-control" required>
+<body>
+
+    <div class="container-login">
+        <div class="logo-container">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster">
         </div>
-        <div class="mb-3">
-          <label for="senha" class="form-label">Senha</label>
-          <input type="password" name="senha" id="senha" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Entrar</button>
-      </form>
+        
+        <h1 class="login-title">Bem-vindo(a) de volta</h1>
+        <p class="login-subtitle">Entre para acessar sua conta.</p>
+
+        {% if erro %}
+            <div class="alert alert-danger text-center">{{ erro }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Usuário</label>
+                <input type="text" name="usuario" id="usuario" class="form-control" required placeholder="Digite seu usuário">
+            </div>
+            <div class="mb-4">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" name="senha" id="senha" class="form-control" required placeholder="Digite sua senha">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
     </div>
-  </div>
-<link rel="manifest" href="/static/manifest.json">
-<link rel="icon" href="/static/icons/icon-192.png">
-<meta name="theme-color" content="#0d6efd">
 
-<!-- Service Worker -->
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/static/sw.js')
-      .then(reg => console.log('Service Worker registrado!', reg))
-      .catch(err => console.error('Erro ao registrar SW:', err));
-  }
-</script>
-
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('Service Worker registrado!', reg))
+                .catch(err => console.error('Erro ao registrar SW:', err));
+        }
+    </script>
 </body>
 </html>
+
+
