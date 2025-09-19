@@ -279,7 +279,7 @@ def bling_api_call(endpoint, method='GET', data=None):
             print("Falha ao renovar o access token. Requer reautenticação manual.")
             flash("Sua conexão com o Bling expirou e não pôde ser renovada automaticamente. Por favor, reconecte.")
             return None
-        current_token_obj.access_token = new_access_token
+        current_token_obj = get_bling_tokens_from_db()
 
     headers = {
         'Authorization': f'Bearer {current_token_obj.access_token}',
@@ -4477,4 +4477,5 @@ if __name__ == '__main__':
     # os.environ['BLING_REDIRECT_URI'] = 'https://5fda-187-115-202-58.ngrok-free.app/callback' 
 
     init_db()
+
     app.run(debug=True)
