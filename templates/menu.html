@@ -1,20 +1,490 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Menu Principal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menu Principal - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        /* Paleta de Cores e Estilos Globais */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar - Menu Lateral */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-logo img {
+            max-width: 200px;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .nav-link:hover {
+            background-color: var(--cor-nav-item-hover);
+            color: var(--cor-texto);
+        }
+
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--cor-borda);
+        }
+
+        .sidebar-bottom .nav-link {
+            color: var(--cor-subtitulo);
+        }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        /* Estilização dos blocos de conteúdo */
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        /* Estilos específicos para os alertas */
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #f8f9fa;
+            color: var(--cor-texto);
+            border: 1px solid #ced4da;
+        }
+
+        .form-control::placeholder, .form-select::placeholder {
+            color: #adb5bd;
+        }
+
+        .form-label {
+            color: var(--cor-texto);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cor-texto);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .welcome-text small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--cor-subtitulo);
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Novo estilo para os cards de atalho */
+        .shortcut-card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--cor-texto);
+            display: block;
+            height: 100%;
+        }
+
+        .shortcut-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .shortcut-card .icon {
+            font-size: 3rem;
+            color: var(--cor-primaria);
+            margin-bottom: 15px;
+        }
+
+        .shortcut-card h4 {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Estilos para o menu hambúrguer e responsividade */
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--cor-texto);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            display: none; /* Escondido por padrão em telas grandes */
+        }
+
+        .menu-toggle:focus {
+            outline: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Ocupa toda a largura em telas pequenas */
+        }
+
+        /* Esconde a navegação por padrão em telas pequenas */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px; /* Esconde a sidebar para a esquerda */
+                height: 100%;
+                transition: left 0.3s ease-in-out;
+            }
+
+            .sidebar-open .sidebar {
+                left: 0; /* Mostra a sidebar quando a classe 'sidebar-open' está no body */
+            }
+
+            .menu-toggle {
+                display: block; /* Mostra o botão do menu */
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001; /* Acima do sidebar */
+            }
+
+            .content {
+                padding-left: 20px;
+                padding-right: 20px;
+                margin-left: 0;
+                transition: margin-left 0.3s ease-in-out;
+                /* --- INÍCIO DA CORREÇÃO --- */
+                padding-top: 60px; /* Adiciona espaço no topo para o botão não sobrepor o texto */
+                /* --- FIM DA CORREÇÃO --- */
+            }
+
+            .sidebar-open .content {
+                margin-left: 280px; /* Empurra o conteúdo para a direita quando o menu está aberto */
+            }
+
+            .sidebar-logo {
+                text-align: center;
+            }
+
+            .sidebar-bottom {
+                border-top: none;
+                padding-top: 0;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2 class="text-center mb-4">Geramaster App</h2>
-<div class="container text-center">
-    <h1 class="my-4">Olá, {{ usuario }}!</h1>
-    <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a>
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="d-grid gap-3 col-6 mx-auto">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Folha de Ponto</a>
-        <a href="{{ url_for('rdv') }}" class="btn btn-secondary btn-lg">RDV</a>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+            <a href="{{ url_for('menu') }}" class="nav-link active">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+            {% if tipo == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+            {% if tipo == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+            {% if tipo == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-bottom sidebar-nav">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
     </div>
-</div>
+
+    <div class="content container">
+        <div class="main-header">
+            <h1 class="welcome-text">Olá, {{ usuario }}! <br><small>Bem-vindo ao sistema Geramaster.</small></h1>
+        </div>
+
+
+        <div class="card p-4">
+
+            {% if alertas %}
+                <div class="alert alert-warning mt-3" role="alert">
+                    <h5 class="alert-heading">Alerta! Saldo RDV Baixo!</h5>
+                    <ul class="mb-0 ps-3">
+                        {% for usuario_alerta, nome, saldo in alertas %}
+                            <li>⚠️ Técnico {{ nome }} está com saldo baixo: R${{ "%.2f"|format(saldo) }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if user_type == 'admin' and avisos_troca_oleo %}
+                <div class="alert alert-danger mt-3" role="alert">
+                    <h5 class="alert-heading">⚠️ Atenção! Troca de Óleo/Filtro Próxima:</h5>
+                    <ul class="mb-0 ps-3">
+                        {% for aviso in avisos_troca_oleo %}
+                            <li>
+                                {{ aviso.placa }}: Faltam {{ aviso.km_restante | int }} km para a próxima troca.
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if user_type == 'admin' and alertas_geradores %}
+                {% set has_vencido = false %}
+                {% for alerta in alertas_geradores %}
+                    {% if 'VENCIDO' in alerta.status %}
+                        {% set has_vencido = true %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="alert alert-{% if has_vencido %}danger{% else %}warning{% endif %} mt-3" role="alert">
+                    <h5 class="alert-heading">🔧 Alerta! Manutenção de Geradores!</h5>
+                    <ul class="mb-0 ps-3">
+                        {% for alerta in alertas_geradores %}
+                            <li class="{% if 'VENCIDO' in alerta.status %}fw-bold{% endif %}">
+                                {% if 'VENCIDO' in alerta.status %}
+                                    <span class="text-danger">🚨 **VENCIDO**</span>
+                                {% else %}
+                                    <span class="text-warning">⚠️ **{{ alerta.status }}**</span>
+                                {% endif %}
+                                em {{ alerta.vencimento }} - TAG: {{ alerta.tag }} - {{ alerta.item }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+
+        </div>
+
+
+        <div class="card p-4">
+            <h3 class="mb-4">Acesso Rápido</h3>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="col">
+                    <a href="{{ url_for('rdv') }}" class="shortcut-card">
+                        <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+                        <h4>Registrar RDV</h4>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('controle_veiculos') }}" class="shortcut-card">
+                        <div class="icon"><i class="fas fa-car-side"></i></div>
+                        <h4>Controle dos Veículos</h4>
+                    </a>
+                </div>
+                {% if is_admin %}
+                    <div class="col">
+                        <a href="{{ url_for('estoque') }}" class="shortcut-card">
+                            <div class="icon"><i class="fas fa-boxes-packing"></i></div>
+                            <h4>Estoque</h4>
+                        </a>
+                    </div>
+                {% endif %}
+                <div class="col">
+                    <a href="{{ url_for('deposito') }}" class="shortcut-card">
+                        <div class="icon"><i class="fas fa-money-check-alt"></i></div>
+                        <h4>Registrar Depósito</h4>
+                    </a>
+                </div>
+        
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const body = document.body;
+
+        menuToggle.addEventListener('click', function() {
+            body.classList.toggle('sidebar-open');
+        });
+
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            // Ajuste o caminho se seu service-worker.js não estiver na raiz do domínio
+            navigator.serviceWorker.register('/static/service-worker.js')
+            .then(function(registration) {
+                console.log('Service Worker registrado com sucesso:', registration);
+                return registration;
+            })
+            // ... restante do código para pedir permissão e obter subscription ...
+            .catch(function(error) {
+                console.error('Erro no registro do Service Worker ou Push:', error);
+            });
+        } else {
+            console.warn('Este navegador não suporta Service Workers ou Push API.');
+        }
+
+        // Função auxiliar urlBase64ToUint8Array (mantê-la)
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray [i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+    </script>
 </body>
 </html>

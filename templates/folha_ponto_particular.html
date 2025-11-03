@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { max-width: 1200px; margin-top: 30px; }
+        .card { border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .form-control, .btn { border-radius: 0.5rem; }
+        .table-responsive { overflow-x: auto; }
+        .table th { white-space: nowrap; }
+        .nav-tabs .nav-link.active { background-color: #007bff; color: white; border-color: #007bff; }
+        .btn-acao { margin-left: 5px; }
+        .logo { max-height: 80px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='Geramaster logo Preto fundo transparente.png') }}" alt="Logo Geramaster" class="logo">
+            <h2>Bem-vindo, {{ usuario }}!</h2>
+        </div>
+
+        <nav>
+            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-folha-tab" data-bs-toggle="tab" data-bs-target="#nav-folha" type="button" role="tab" aria-controls="nav-folha" aria-selected="true">Folha de Ponto</button>
+                <button class="nav-link" id="nav-registrar-tab" data-bs-toggle="tab" data-bs-target="#nav-registrar" type="button" role="tab" aria-controls="nav-registrar" aria-selected="false">Registrar Ponto</button>
+            </div>
+        </nav>
+        
+        <div class="tab-content" id="nav-tabContent">
+            <!-- Folha de Ponto -->
+            <div class="tab-pane fade show active" id="nav-folha" role="tabpanel" aria-labelledby="nav-folha-tab">
+                <div class="card p-4">
+                    <h3>Minha Folha de Ponto</h3>
+                    <form method="GET" action="{{ url_for('meu_dashboard') }}" class="mb-3 d-flex flex-wrap align-items-end">
+                        <div class="me-3 mb-2">
+                            <label for="filtro_data_inicio" class="form-label">Data de Início:</label>
+                            <input type="date" class="form-control" id="filtro_data_inicio" name="filtro_data_inicio" value="{{ filtro_data_inicio }}">
+                        </div>
+                        <div class="me-3 mb-2">
+                            <label for="filtro_data_fim" class="form-label">Data de Fim:</label>
+                            <input type="date" class="form-control" id="filtro_data_fim" name="filtro_data_fim" value="{{ filtro_data_fim }}">
+                        </div>
+                        <div class="me-3 mb-2">
+                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                        </div>
+                        <div class="mb-2">
+                            <a href="{{ url_for('meu_exportar_pdf', filtro_data_inicio=filtro_data_inicio, filtro_data_fim=filtro_data_fim) }}" class="btn btn-info">Exportar PDF</a>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover text-center">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Entrada Trabalho</th>
+                                    <th>Saída Trabalho</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for (usuario, data_str), tempos in registros_agrupados.items() %}
+                                <tr>
+                                    <td class="align-middle">
+                                        {{ data_str }}
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if tempos['entrada'] %}{{ tempos['entrada']['hora'] }}{% else %}-{% endif %}
+                                    </td>
+                                  
+                                    <td class="align-middle">
+                                        {% if tempos['saida'] %}{{ tempos['saida']['hora'] }}{% else %}-{% endif %}
+                                    </td>
+                                   
+                                    <!--<td class="align-middle">
+                                        {% if tempos['saida_hora_extra'] %}{{ tempos['saida_hora_extra']['hora'] }}{% else %}-{% endif %}
+                                    </td> -->
+                                    <td class="align-middle">
+                                        <form action="{{ url_for('meu_excluir_dia', data=data_str) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir todos os registros deste dia?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Excluir Dia</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registrar Ponto -->
+            <div class="tab-pane fade" id="nav-registrar" role="tabpanel" aria-labelledby="nav-registrar-tab">
+                <div class="card p-4">
+                    <h3>Registrar Ponto</h3>
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-agora-tab" data-bs-toggle="pill" data-bs-target="#pills-agora" type="button" role="tab" aria-controls="pills-agora" aria-selected="true">Registrar Agora</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-manual-tab" data-bs-toggle="pill" data-bs-target="#pills-manual" type="button" role="tab" aria-controls="pills-manual" aria-selected="false">Registro Manual</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="pills-tabContent">
+                        <!-- Registrar Agora -->
+                        <div class="tab-pane fade show active" id="pills-agora" role="tabpanel" aria-labelledby="pills-agora-tab">
+                            <form method="POST" action="{{ url_for('meu_dashboard') }}" onsubmit="return obterLocalizacao()">
+                                <div class="mb-3">
+                                    <label for="tipo_registro" class="form-label">Tipo de Registro:</label>
+                                    <select class="form-control" id="tipo_registro" name="tipo_registro" required>
+                                        <option value="entrada">Entrada</option>
+                                        <option value="saida">Saída</option>
+                                        
+                                      <!--  <option value="saida_hora_extra">Saída Hora Extra</option>-->
+                                    </select>
+                                </div>
+                                <input type="hidden" name="acao" value="registrar_agora">
+                                <input type="hidden" id="latitude_agora" name="latitude">
+                                <input type="hidden" id="longitude_agora" name="longitude">
+                                <button type="submit" class="btn btn-primary">Registrar</button>
+                            </form>
+                        </div>
+                        <!-- Registro Manual -->
+                        <div class="tab-pane fade" id="pills-manual" role="tabpanel" aria-labelledby="pills-manual-tab">
+                            <form method="POST" action="{{ url_for('meu_dashboard') }}" onsubmit="return obterLocalizacaoManual()">
+                                <div class="mb-3">
+                                    <label for="tipo_registro_manual" class="form-label">Tipo de Registro:</label>
+                                    <select class="form-control" id="tipo_registro_manual" name="tipo_registro_manual" required>
+                                        <option value="entrada">Entrada</option>
+                                        <option value="saida">Saída</option>
+
+                                     <!--   <option value="saida_hora_extra">Saída Hora Extra</option>-->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="data" class="form-label">Data:</label>
+                                    <input type="date" class="form-control" id="data" name="data" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hora" class="form-label">Hora:</label>
+                                    <input type="time" class="form-control" id="hora" name="hora" required>
+                                </div>
+                                <input type="hidden" name="acao" value="registrar_manual">
+                                <input type="hidden" id="latitude_manual" name="latitude">
+                                <input type="hidden" id="longitude_manual" name="longitude">
+                                <button type="submit" class="btn btn-primary">Registrar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Sair</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function obterLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('latitude_agora').value = position.coords.latitude;
+                        document.getElementById('longitude_agora').value = position.coords.longitude;
+                        document.querySelector('#pills-agora form').submit();
+                    },
+                    function(error) {
+                        console.error('Erro ao obter a localização:', error);
+                        document.querySelector('#pills-agora form').submit();
+                    }
+                );
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        function obterLocalizacaoManual() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('latitude_manual').value = position.coords.latitude;
+                        document.getElementById('longitude_manual').value = position.coords.longitude;
+                        document.querySelector('#pills-manual form').submit();
+                    },
+                    function(error) {
+                        console.error('Erro ao obter a localização:', error);
+                        document.querySelector('#pills-manual form').submit();
+                    }
+                );
+                return false;
+            } else {
+                return true;
+            }
+        }
+    </script>
+</body>
+</html>
