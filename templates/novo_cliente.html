@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Cliente - Geramaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; --cor-card-fundo: #fff; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; z-index: 1000; }
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        .card { background-color: var(--cor-card-fundo); border: 1px solid #dee2e6; border-radius: 8px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        /* Estilo do Card de Equipamento */
+        .equip-card { background: #f8f9fa; border: 1px solid #dee2e6; border-left: 5px solid var(--cor-primaria); padding: 20px; margin-bottom: 20px; border-radius: 8px; position: relative; }
+        .btn-remove-card { position: absolute; top: 10px; right: 10px; }
+        /* Menu Mobile e Sidebar Styles (omitidos para brevidade, use os mesmos dos arquivos anteriores) */
+        .sidebar-logo { margin-bottom: 40px; text-align: center; } .sidebar-logo img { max-width: 180px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: #6c757d; font-weight: 500; text-decoration: none; border-radius: 8px; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+    </style>
+</head>
+<body>
+    
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo"></div>
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link active">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+    </div>
+
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Novo Cliente</h2>
+            <a href="{{ url_for('listar_clientes') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+
+        <form action="{{ url_for('novo_cliente') }}" method="POST">
+            <div class="card mb-4">
+                <h5 class="text-primary mb-3">Dados Cadastrais</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nome / Razão Social:</label>
+                        <input type="text" name="nome_cliente" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Contato:</label>
+                        <input type="text" name="contato" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Endereço:</label>
+                        <input type="text" name="endereco" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-primary mb-0">Frota de Equipamentos</h5>
+                    <button type="button" class="btn btn-sm btn-success" onclick="addEquipamentoCard()">
+                        <i class="fas fa-plus"></i> Adicionar Equipamento
+                    </button>
+                </div>
+                
+                <div id="lista-equips">
+                    </div>
+                <div id="avisoVazio" class="text-center text-muted py-4 border rounded bg-light">
+                    Clique em "Adicionar Equipamento" para cadastrar a frota.
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow">Salvar Cadastro</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function addEquipamentoCard() {
+            document.getElementById('avisoVazio').style.display = 'none';
+            const container = document.getElementById('lista-equips');
+            const div = document.createElement('div');
+            div.className = 'equip-card shadow-sm';
+            
+            // HTML DO CARD COM TODOS OS CAMPOS
+            div.innerHTML = `
+                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-card" onclick="this.parentElement.remove()">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Nome do Equipamento *</label>
+                        <input type="text" name="equip_nome[]" class="form-control form-control-sm" placeholder="Ex: GMG Principal" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Potência (KVA)</label>
+                        <input type="text" name="equip_kva[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Nº Série Principal</label>
+                        <input type="text" name="equip_serie[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Fabricante</label>
+                        <input type="text" name="equip_fabricante[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Tag</label>
+                        <input type="text" name="equip_tag[]" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-12"><hr class="my-1 text-muted"></div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Modelo Motor</label>
+                        <input type="text" name="equip_mot_mod[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Nº Série Motor</label>
+                        <input type="text" name="equip_mot_ser[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Modelo Gerador</label>
+                        <input type="text" name="equip_ger_mod[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Nº Série Gerador</label>
+                        <input type="text" name="equip_ger_ser[]" class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-12"><hr class="my-1 text-muted"></div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Tensão VCA</label>
+                        <select name="equip_vca[]" class="form-select form-select-sm">
+                            <option value="220/127">220/127</option>
+                            <option value="380/220">380/220</option>
+                            <option value="440/254">440/254</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small text-muted">Tensão VCC</label>
+                        <select name="equip_vcc[]" class="form-select form-select-sm">
+                            <option value="12V">12V</option>
+                            <option value="24V">24V</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Unidade Controle</label>
+                        <input type="text" name="equip_controle[]" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Regime Operação</label>
+                        <select name="equip_regime[]" class="form-select form-select-sm">
+                            <option value="Standby">Standby</option>
+                            <option value="Prime">Prime</option>
+                            <option value="Continuo">Contínuo</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+        
+        // Adiciona um card vazio ao carregar
+        document.addEventListener('DOMContentLoaded', addEquipamentoCard);
+    </script>
+</body>
+</html>
