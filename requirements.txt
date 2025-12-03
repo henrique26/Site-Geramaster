@@ -4,4 +4,6 @@ pytz
 psycopg2-binary
 fpdf2
 requests
+
 Flask-JWT-Extended
+cloudinary
