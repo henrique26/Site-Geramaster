@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova OS - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        /* --- ESTILO GERAMASTER PADRÃO --- */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-logo { margin-bottom: 40px; text-align: center; }
+        .sidebar-logo img { max-width: 180px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        .nav-link:hover { background-color: var(--cor-nav-item-hover); color: var(--cor-texto); }
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cor-borda); }
+
+        /* Conteúdo */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        h1, h2, h3, h4 { color: var(--cor-texto); font-weight: 600; margin-bottom: 1.5rem; }
+
+        /* Responsividade */
+        .menu-toggle {
+            background: none; border: none; color: var(--cor-texto);
+            font-size: 1.5rem; cursor: pointer; padding: 10px;
+            display: none; position: fixed; top: 15px; left: 15px; z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: -280px; height: 100%; transition: left 0.3s ease-in-out; }
+            .sidebar-open .sidebar { left: 0; }
+            .menu-toggle { display: block; }
+            .content { padding-left: 20px; padding-right: 20px; padding-top: 60px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link active">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Nova Ordem de Serviço</h1>
+            <a href="{{ url_for('os_painel') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card p-4">
+            <form action="{{ url_for('criar_os') }}" method="POST" id="formOS">
+                
+                <h4 class="mb-4 text-primary">Informações Básicas</h4>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Cliente:</label>
+                        <select name="cliente" id="clienteSelect" class="form-select" required onchange="carregarEquipamentos()">
+                            <option value="" selected disabled>Selecione o cliente...</option>
+                            {% for c in clientes %}
+                                <option value="{{ c.id }}">{{ c.nome_cliente }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Técnicos Responsáveis:</label>
+                        <small class="text-muted d-block mb-1">(Segure Ctrl para selecionar vários)</small>
+                        <select name="tecnicos[]" class="form-select" multiple required style="height: 100px;">
+                            {% for t in tecnicos %}
+                                <option value="{{ t.id }}">{{ t.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Veículo Utilizado:</label>
+                        <select name="veiculo" class="form-select">
+                            <option value="" selected>Nenhum / Não se aplica</option>
+                            {% for v in veiculos %}
+                                <option value="{{ v }}">{{ v }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="mb-4">
+
+                <h4 class="mb-3 text-primary">Equipamentos e Serviços</h4>
+                
+                <div class="card p-3 mb-4 bg-light border-0">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Equipamento (Do Cliente):</label>
+                            <select id="selectEquipamentoOrigem" class="form-select" disabled>
+                                <option>Selecione um cliente primeiro...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Tipo de Checklist/Serviço:</label>
+                            <select id="selectTipoServico" class="form-select">
+                                <option value="preventiva">Manutenção Preventiva</option>
+                                <option value="corretiva">Manutenção Corretiva</option>
+                                <option value="entrega_tecnica">Entrega Técnica</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success w-100" onclick="addNaLista()">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipamento</th>
+                                <th>Tipo de Serviço</th>
+                                <th class="text-end">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaItens">
+                            </tbody>
+                    </table>
+                    <div id="avisoVazio" class="text-center text-muted p-3 border bg-white rounded">
+                        Nenhum equipamento adicionado à lista.
+                    </div>
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Prioridade:</label>
+                        <select name="prioridade" class="form-select">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Normal" selected>Normal</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente" class="text-danger fw-bold">Urgente</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9 mb-3">
+                        <label class="form-label fw-bold">Descrição Geral / Problema Relatado:</label>
+                        <textarea name="descricao" class="form-control" rows="3" placeholder="Descreva brevemente o motivo da visita..."></textarea>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        Criar Ordem de Serviço
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+
+        // --- LÓGICA DE EQUIPAMENTOS (MANTIDA) ---
+        function carregarEquipamentos() {
+        let clienteId = document.getElementById('clienteSelect').value;
+        let equipSelect = document.getElementById('selectEquipamentoOrigem');
+        
+        equipSelect.innerHTML = '<option>Carregando...</option>';
+        equipSelect.disabled = true;
+
+        fetch(`/api/equipamentos/${clienteId}`)
+            .then(response => response.json())
+            .then(data => {
+                // DEBUG: Veja no console do navegador o que está chegando
+                console.log("DADOS CHEGANDO DA API:", data);
+
+                equipSelect.innerHTML = '';
+                
+                if (data.length === 0) {
+                    let option = document.createElement('option');
+                    option.text = "Nenhum equipamento cadastrado.";
+                    equipSelect.add(option);
+                } else {
+                    data.forEach(eq => {
+                        let option = document.createElement('option');
+                        option.value = eq.id;
+                        
+                        // --- CORREÇÃO BLINDADA ---
+                        // Tenta ler 'nome_equipamento', se não tiver tenta 'nome', se não tiver avisa
+                        let nomeReal = eq.nome_equipamento || eq.nome || "Sem Nome";
+                        
+                        // Parte 1: Nome e KVA
+                        let texto = nomeReal;
+                        if (eq.potencia_kva) texto += ` (${eq.potencia_kva} KVA)`;
+                        
+                        // Parte 2: Detalhes extras (Motor e Série)
+                        let detalhes = [];
+                        if (eq.motor_modelo) detalhes.push(`Motor: ${eq.motor_modelo}`);
+                        if (eq.numero_serie_principal) detalhes.push(`Série: ${eq.numero_serie_principal}`);
+                        
+                        // Junta tudo com separador
+                        if (detalhes.length > 0) {
+                            option.text = `${texto} | ${detalhes.join(' - ')}`;
+                        } else {
+                            option.text = texto;
+                        }
+                        
+                        equipSelect.add(option);
+                    });
+                    equipSelect.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error("Erro no fetch:", err);
+                equipSelect.innerHTML = '<option>Erro ao carregar.</option>';
+            });
+    }
+
+        function addNaLista() {
+            let equipSelect = document.getElementById('selectEquipamentoOrigem');
+            let tipoSelect = document.getElementById('selectTipoServico');
+            let tbody = document.getElementById('tabelaItens');
+            let aviso = document.getElementById('avisoVazio');
+
+            if (equipSelect.disabled || equipSelect.value === "") {
+                alert("Selecione um equipamento válido.");
+                return;
+            }
+
+            let equipId = equipSelect.value;
+            let equipNome = equipSelect.options[equipSelect.selectedIndex].text;
+            let tipoValor = tipoSelect.value;
+            let tipoTexto = tipoSelect.options[tipoSelect.selectedIndex].text;
+
+            aviso.style.display = 'none';
+
+            let row = tbody.insertRow();
+            row.innerHTML = `
+                <td>
+                    ${equipNome}
+                    <input type="hidden" name="equipamento_id[]" value="${equipId}">
+                </td>
+                <td>
+                    <span class="badge bg-secondary">${tipoTexto}</span>
+                    <input type="hidden" name="tipo_servico_item[]" value="${tipoValor}">
+                </td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerItem(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+        }
+
+        function removerItem(btn) {
+            let row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            let tbody = document.getElementById('tabelaItens');
+            if (tbody.rows.length === 0) {
+                document.getElementById('avisoVazio').style.display = 'block';
+            }
+        }
+
+        document.getElementById('formOS').onsubmit = function() {
+            let tbody = document.getElementById('tabelaItens');
+            if (tbody.rows.length === 0) {
+                alert("Adicione pelo menos um equipamento na lista.");
+                return false;
+            }
+            return true;
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar OS - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; --cor-card-fundo: #f8f9fa; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; z-index: 1000; }
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        .card { background-color: #fff; border: 1px solid #dee2e6; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px; padding: 25px; }
+        .item-removido { text-decoration: line-through; background-color: #ffe6e6 !important; opacity: 0.6; }
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; transition: left 0.3s; } .sidebar.open { left: 0; } .menu-toggle { display: block; } .content { padding-top: 60px; padding-left: 20px; padding-right: 20px; } }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: #6c757d; text-decoration: none; font-weight: 500; border-radius: 8px; transition: 0.2s; }
+        .nav-link:hover { background-color: #f1f3f5; color: #212529; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+    </style>
+</head>
+
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo" style="max-width: 180px;">
+        </div>
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link active">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+        <div class="mt-auto pt-3 border-top">
+            <a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Editar Ordem de Serviço #{{ os.id_os }}</h2>
+            <a href="{{ url_for('os_painel') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </div>
+
+        <div class="card">
+            <form action="{{ url_for('editar_os', os_id=os.id_os) }}" method="POST">
+                
+                <h5 class="text-primary mb-3">Informações Gerais</h5>
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold form-label">Cliente (Somente Leitura):</label>
+                        <input type="text" class="form-control bg-light" value="{{ os.nome_cliente }}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold form-label">Técnicos Responsáveis:</label>
+                        <small class="text-muted d-block mb-1">(Segure Ctrl para selecionar múltiplos)</small>
+                        <select name="tecnicos[]" class="form-select" multiple required style="height: 120px;">
+                            {% for t in tecnicos %}
+                                <option value="{{ t.id }}" {% if t.id in tecnicos_atuais %}selected{% endif %}>{{ t.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Veículo Utilizado:</label>
+                    <select name="veiculo" class="form-select">
+                        <option value="">Nenhum / Não se aplica</option>
+                        {% for v in veiculos %}
+                            <option value="{{ v }}" {% if v == os.veiculo_utilizado %}selected{% endif %}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <hr>
+
+                <h5 class="text-primary mb-3">Equipamentos Vinculados</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipamento</th>
+                                <th>Tipo de Serviço / Checklist</th>
+                                <th style="width: 120px;" class="text-center">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in equips_ja_tem %}
+                            <tr id="linha_existente_{{ item.vinculo_id }}">
+                                <td class="fw-bold">{{ item.nome_equipamento }}</td>
+                                <td>
+                                    <select name="tipo_existente_{{ item.vinculo_id }}" class="form-select form-select-sm">
+                                        <option value="preventiva" {% if item.tipo_servico == 'preventiva' %}selected{% endif %}>Preventiva</option>
+                                        <option value="corretiva" {% if item.tipo_servico == 'corretiva' %}selected{% endif %}>Corretiva</option>
+                                        <option value="entrega_tecnica" {% if item.tipo_servico == 'entrega_tecnica' %}selected{% endif %}>Entrega Técnica</option>
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-id="{{ item.vinculo_id }}" onclick="marcarParaRemover(this)">
+                                        <i class="bi bi-trash"></i> Remover
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div id="container-remocao"></div>
+                </div>
+
+                <h5 class="text-success mt-4">Adicionar Novo Equipamento</h5>
+                <div class="card bg-light border-success mb-3 p-3">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-5">
+                            <label class="small text-muted">Equipamento (Disponíveis do Cliente):</label>
+                            <select id="selectNovoEquip" class="form-select">
+                                <option value="" selected disabled>Selecione...</option>
+                                {% for eq in lista_equips %}
+                                    <option value="{{ eq.id }}">
+                                        {{ eq.nome_equipamento }} 
+                                        {% if eq.potencia_kva %}({{ eq.potencia_kva }} KVA){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="small text-muted">Tipo de Serviço:</label>
+                            <select id="selectNovoTipo" class="form-select">
+                                <option value="preventiva">Manutenção Preventiva</option>
+                                <option value="corretiva">Manutenção Corretiva</option>
+                                <option value="entrega_tecnica">Entrega Técnica</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success w-100" onclick="addNovoItem()">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-sm table-striped" id="tabelaNovos"><tbody id="tbodyNovos"></tbody></table>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="fw-bold form-label">Prioridade:</label>
+                        <select name="prioridade" class="form-select">
+                            <option value="Baixa" {% if os.prioridade == 'Baixa' %}selected{% endif %}>Baixa</option>
+                            <option value="Normal" {% if os.prioridade == 'Normal' %}selected{% endif %}>Normal</option>
+                            <option value="Alta" {% if os.prioridade == 'Alta' %}selected{% endif %}>Alta</option>
+                            <option value="Urgente" {% if os.prioridade == 'Urgente' %}selected{% endif %}>Urgente</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9 mb-3">
+                        <label class="fw-bold form-label">Descrição Geral:</label>
+                        <textarea name="descricao" class="form-control" rows="3">{{ os.descricao }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{{ url_for('os_painel') }}" class="btn btn-secondary px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+        function marcarParaRemover(btn) {
+            let idVinculo = btn.getAttribute('data-id');
+            let linha = document.getElementById('linha_existente_' + idVinculo);
+            let container = document.getElementById('container-remocao');
+
+            if (linha.classList.contains('item-removido')) {
+                linha.classList.remove('item-removido');
+                let input = document.getElementById('input_del_' + idVinculo);
+                if(input) input.remove();
+                btn.innerHTML = '<i class="bi bi-trash"></i> Remover';
+                btn.className = 'btn btn-outline-danger btn-sm';
+            } else {
+                linha.classList.add('item-removido');
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deletar_ids[]';
+                input.value = idVinculo;
+                input.id = 'input_del_' + idVinculo;
+                container.appendChild(input);
+                btn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Desfazer';
+                btn.className = 'btn btn-secondary btn-sm';
+            }
+        }
+
+        function addNovoItem() {
+            let selectEq = document.getElementById('selectNovoEquip');
+            let selectTp = document.getElementById('selectNovoTipo');
+            let tbody = document.getElementById('tbodyNovos');
+
+            if (selectEq.value === "") { alert("Selecione um equipamento."); return; }
+
+            let row = tbody.insertRow();
+            row.innerHTML = `
+                <td><i class="bi bi-plus-circle-fill text-success me-2"></i> ${selectEq.options[selectEq.selectedIndex].text}
+                    <input type="hidden" name="equipamento_id[]" value="${selectEq.value}">
+                </td>
+                <td>${selectTp.options[selectTp.selectedIndex].text}
+                    <input type="hidden" name="tipo_servico_item[]" value="${selectTp.value}">
+                </td>
+                <td class="text-end"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()"><i class="bi bi-x-lg"></i></button></td>
+            `;
+        }
+    </script>
+</body>
+</html>

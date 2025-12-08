@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Ordens de Serviço - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        /* --- SEU CSS ORIGINAL --- */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-logo { margin-bottom: 40px; text-align: center; }
+        .sidebar-logo img { max-width: 180px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        
+        .nav-link:hover { background-color: var(--cor-nav-item-hover); color: var(--cor-texto); }
+        
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cor-borda); }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        h1, h2, h3, h4 { color: var(--cor-texto); font-weight: 600; margin-bottom: 1.5rem; }
+
+        /* Responsividade Mobile */
+        .menu-toggle {
+            background: none; border: none; color: var(--cor-texto);
+            font-size: 1.5rem; cursor: pointer; padding: 10px;
+            display: none; position: fixed; top: 15px; left: 15px; z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: -280px; height: 100%; transition: left 0.3s ease-in-out; }
+            .sidebar-open .sidebar { left: 0; }
+            .menu-toggle { display: block; }
+            .content { padding-left: 20px; padding-right: 20px; padding-top: 60px; }
+        }
+
+        /* Estilos Específicos da Tabela de OS */
+        .status-aberta { background-color: #ffc107; color: #000; }
+        .status-concluida { background-color: #198754; color: #fff; }
+        .status-execucao { background-color: #0d6efd; color: #fff; } /* Azul para Em Execução */
+        
+        .clickable-row { cursor: pointer; transition: background 0.2s; }
+        .clickable-row:hover { background-color: #e9ecef !important; }
+    </style>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Aponta para o arquivo que criamos no Passo 1
+            navigator.serviceWorker.register('/static/service-worker.js')
+                .then((reg) => {
+                    console.log('Service Worker registrado com sucesso. Escopo:', reg.scope);
+                })
+                .catch((err) => {
+                    console.log('Falha ao registrar Service Worker:', err);
+                });
+        });
+    }
+</script>
+</head>
+
+<body>
+
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link active">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <div id="offlineAlert" class="alert alert-danger shadow-sm mb-3" style="display: none;">
+            <i class="fas fa-wifi-slash"></i> <strong>Você está Offline.</strong> 
+            Algumas informações podem estar desatualizadas. Você pode acessar as OSs que visitou recentemente.
+        </div>
+
+        <script>
+            function updateOnlineStatus() {
+                const alert = document.getElementById('offlineAlert');
+                if (!navigator.onLine) {
+                    alert.style.display = 'block';
+                    // Opcional: Desabilitar botões que exigem internet estrita
+                } else {
+                    alert.style.display = 'none';
+                }
+            }
+
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            document.addEventListener('DOMContentLoaded', updateOnlineStatus);
+        </script>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="mb-0">Ordens de Serviço</h1>
+                <small class="text-muted">Gerenciamento de manutenções e checklist</small>
+            </div>
+
+            {% if user_type == 'admin' %}
+            <div class="d-flex gap-2">
+                
+                <a href="{{ url_for('criar_os') }}" class="btn btn-primary" style="background-color: var(--cor-primaria); border-color: var(--cor-primaria);">
+                    <i class="fas fa-plus-circle"></i> Nova OS
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card p-3">
+            <div class="row align-items-center">
+                <div class="col-md-1">
+                    <label class="fw-bold"><i class="fas fa-search"></i> Filtrar:</label>
+                </div>
+                <div class="col-md-11">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Busque por Cliente, ID, Técnico ou Status...">
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-0 overflow-hidden d-none d-md-block">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="osTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 ps-4"># ID</th>
+                            <th class="py-3">Cliente</th>
+                            <th class="py-3">Descrição</th>
+                            <th class="py-3">Técnico(s)</th>
+                            <th class="py-3">Abertura</th>
+                            <th class="py-3 text-center">Status</th>
+                            <th class="py-3 text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if ordens_servico %}
+                            {% for os in ordens_servico %}
+                            <tr class="clickable-row">
+                                <td class="ps-4 fw-bold">{{ os.id_os }}</td>
+                                <td>{{ os.nome_cliente }}</td>
+                                <td title="{{ os.descricao }}">
+                                    {{ (os.descricao or '') | truncate(50) }}
+                                </td>
+                                <td><small class="text-muted">{{ os.nome_tecnico or 'Sem técnico' }}</small></td>
+                                <td>{{ os.data_hora_abertura | data_brasil }}</td>
+                                <td class="text-center">
+                                    {% if os.status == 'Concluída' %}
+                                        <span class="badge bg-success">Concluída</span>
+                                    {% elif os.status == 'Em Execução' %}
+                                        <span class="badge bg-primary">Em Execução</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Aberta</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{{ url_for('visualizar_os', os_id=os.id_os) }}" class="btn btn-sm btn-light border text-dark me-1"><i class="fas fa-eye"></i></a>
+                                    {% if user_type == 'admin' %}
+                                        <a href="{{ url_for('editar_os', os_id=os.id_os) }}" class="btn btn-sm btn-warning text-dark me-1"><i class="fas fa-pencil-alt"></i></a>
+                                    {% endif %}
+                                    {% if os.status == 'Concluída' %}
+                                        <a href="{{ url_for('os_detalhes', os_id=os.id_os) }}" class="btn btn-sm btn-info text-white ms-1"><i class="fas fa-file-alt"></i></a>
+                                    {% else %}
+                                        <a href="{{ url_for('os_executar', os_id=os.id_os) }}" class="btn btn-sm btn-outline-success ms-1"><i class="fas fa-play"></i></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="7" class="text-center py-5 text-muted">Nenhuma OS encontrada.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-md-none mobile-list">
+            {% if ordens_servico %}
+                {% for os in ordens_servico %}
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-light text-dark border">#{{ os.id_os }}</span>
+                                <span class="ms-1 fw-bold text-primary">{{ os.nome_cliente }}</span>
+                            </div>
+                            {% if os.status == 'Concluída' %}
+                                <span class="badge bg-success">Concluída</span>
+                            {% elif os.status == 'Em Execução' %}
+                                <span class="badge bg-primary">Em Execução</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Aberta</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <p class="text-muted small mb-1 line-clamp-2">{{ os.descricao }}</p>
+                            <div class="d-flex align-items-center text-muted small mt-2">
+                                <i class="far fa-calendar-alt me-2"></i> {{ os.data_hora_abertura | data_brasil }}
+                            </div>
+                            {% if os.nome_tecnico %}
+                            <div class="d-flex align-items-center text-muted small mt-1">
+                                <i class="fas fa-user-hard-hat me-2"></i> {{ os.nome_tecnico }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {% if os.status == 'Concluída' %}
+                                <a href="{{ url_for('os_detalhes', os_id=os.id_os) }}" class="btn btn-info text-white fw-bold">
+                                    <i class="fas fa-file-alt me-2"></i> RELATÓRIO
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('os_executar', os_id=os.id_os) }}" class="btn btn-success fw-bold py-2">
+                                    <i class="fas fa-play me-2"></i> EXECUTAR
+                                </a>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('visualizar_os', os_id=os.id_os) }}" class="btn btn-light border flex-fill">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                {% if user_type == 'admin' %}
+                                <a href="{{ url_for('editar_os', os_id=os.id_os) }}" class="btn btn-light border flex-fill text-warning">
+                                    <i class="fas fa-pencil-alt"></i> Editar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-light text-center border py-5">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i><br>
+                    Nenhuma OS encontrada.
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle Sidebar Mobile
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+
+        // Filtro da Tabela
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#osTable tbody tr');
+
+            rows.forEach(function(row) {
+                let text = row.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+<script>
+    // --- FORÇAR CACHE DAS PÁGINAS PRINCIPAIS ---
+    // Coloque isso no final do os_painel.html ou menu.html
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // Só roda se tiver internet e suporte a SW
+        if (navigator.onLine && 'serviceWorker' in navigator) {
+            
+            // Lista das páginas que OBRIGATORIAMENTE devem funcionar offline
+            const urlsParaSalvar = [
+                "{{ url_for('menu') }}",
+                "{{ url_for('os_painel') }}",
+                "{{ url_for('controle_veiculos') }}",
+                // Adicione outras rotas aqui se precisar
+            ];
+
+            // Abre o cache e força o download
+            caches.open('geramaster-cache-v4').then(cache => {
+                console.log('💾 Salvando páginas para uso offline...');
+                cache.addAll(urlsParaSalvar)
+                    .then(() => console.log('✅ Páginas salvas com sucesso!'))
+                    .catch(err => console.error('❌ Erro ao salvar páginas:', err));
+            });
+        }
+    });
+</script>
+    
+</body>
+</html>

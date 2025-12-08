@@ -4,7 +4,7 @@
     <script src="/register-sw.js" defer></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Menu Principal - Geramaster</title>
+    <title>Agenda Telefônica - Geramaster</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="manifest" href="/static/manifest.json" />
@@ -121,24 +121,6 @@
             padding: 25px;
         }
 
-        /* Estilos específicos para os alertas */
-        .alert {
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-color: #ffeeba;
-        }
-
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
-        }
-
         .form-control, .form-select, .form-control:focus, .form-select:focus {
             background-color: #f8f9fa;
             color: var(--cor-texto);
@@ -182,41 +164,13 @@
             margin-top: 5px;
         }
 
-        /* Novo estilo para os cards de atalho */
-        .shortcut-card {
-            background-color: var(--cor-card-fundo);
-            border: 1px solid var(--cor-borda);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: var(--cor-texto);
-            display: block;
-            height: 100%;
+        /* Tabela */
+        .table th, .table td {
+            border-right: 1px solid #dee2e6;
         }
 
-        .shortcut-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .shortcut-card .icon {
-            font-size: 3rem;
-            color: var(--cor-primaria);
-            margin-bottom: 15px;
-        }
-
-        .shortcut-card h4 {
-            margin-bottom: 0;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .card-header-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .table th:last-child, .table td:last-child {
+            border-right: none;
         }
 
         /* Estilos para o menu hambúrguer e responsividade */
@@ -267,9 +221,7 @@
                 padding-right: 20px;
                 margin-left: 0;
                 transition: margin-left 0.3s ease-in-out;
-                /* --- INÍCIO DA CORREÇÃO --- */
                 padding-top: 60px; /* Adiciona espaço no topo para o botão não sobrepor o texto */
-                /* --- FIM DA CORREÇÃO --- */
             }
 
             .sidebar-open .content {
@@ -287,26 +239,12 @@
             }
         }
     </style>
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            // Aponta para o arquivo que criamos no Passo 1
-            navigator.serviceWorker.register('/static/service-worker.js')
-                .then((reg) => {
-                    console.log('Service Worker registrado com sucesso. Escopo:', reg.scope);
-                })
-                .catch((err) => {
-                    console.log('Falha ao registrar Service Worker:', err);
-                });
-        });
-    }
-</script>
 </head>
 <body>
     <button class="menu-toggle">
         <i class="fas fa-bars"></i>
     </button>
-
+    <!-- Barra de navegação lateral -->
     <div class="sidebar">
         <div class="sidebar-logo">
             <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
@@ -314,7 +252,7 @@
 
         <nav class="nav flex-column sidebar-nav">
     
-            <a href="{{ url_for('menu') }}" class="nav-link active">
+            <a href="{{ url_for('menu') }}" class="nav-link">
                 <i class="fas fa-home"></i> <span>Menu Principal</span>
             </a>
 
@@ -359,7 +297,7 @@
             </a>
 
             {% if session.get('tipo') == 'admin' %}
-            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link active">
                 <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
             </a>
             {% endif %}
@@ -379,195 +317,213 @@
         </div>
     </div>
 
-    <div class="content container">
+    <!-- Conteúdo principal -->
+    <div class="content container-fluid">
         <div class="main-header">
-            <h1 class="welcome-text">Olá, {{ usuario }}! <br><small>Bem-vindo ao sistema Geramaster.</small></h1>
+            <h1 class="welcome-text">Agenda Telefônica</h1>
         </div>
 
-
-        <div class="card p-4">
-
-            {% if alertas %}
-                <div class="alert alert-warning mt-3" role="alert">
-                    <h5 class="alert-heading">Alerta! Saldo RDV Baixo!</h5>
-                    <ul class="mb-0 ps-3">
-                        {% for usuario_alerta, nome, saldo in alertas %}
-                            <li>⚠️ Técnico {{ nome }} está com saldo baixo: R${{ "%.2f"|format(saldo) }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            {% if user_type == 'admin' and avisos_troca_oleo %}
-                <div class="alert alert-danger mt-3" role="alert">
-                    <h5 class="alert-heading">⚠️ Atenção! Troca de Óleo/Filtro Próxima:</h5>
-                    <ul class="mb-0 ps-3">
-                        {% for aviso in avisos_troca_oleo %}
-                            <li>
-                                {{ aviso.placa }}: Faltam {{ aviso.km_restante | int }} km para a próxima troca.
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            {% if user_type == 'admin' and alertas_geradores %}
-                {% set is_danger = false %}
-                
-                {% for alerta in alertas_geradores %}
-                    {% if alerta.item == 'VENCIDA' %}
-                        {% set is_danger = true %}
-                    {% endif %}
-                {% endfor %}
-
-                <div class="alert alert-{% if is_danger %}danger{% else %}warning{% endif %} mt-3" role="alert">
-                    <h5 class="alert-heading">🔧 Alerta! Manutenção de Geradores!</h5>
-                    <ul class="mb-0 ps-3">
-                        {% for alerta in alertas_geradores %}
-                            <li class="{% if alerta.item == 'VENCIDA' %}fw-bold text-danger{% endif %}">
-                                🚨 {{ alerta.mensagem }}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-
-        </div>
-
-
-        <div class="card p-4">
-            <h3 class="mb-4">Acesso Rápido</h3>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <div class="col">
-                    <a href="{{ url_for('os_painel') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-tools"></i></div>
-                        <h4>Ordens de Serviço</h4>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{{ url_for('rdv') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
-                        <h4>Registrar RDV</h4>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{{ url_for('controle_veiculos') }}" class="shortcut-card">
-                        <div class="icon"><i class="fas fa-car-side"></i></div>
-                        <h4>Controle dos Veículos</h4>
-                    </a>
-                </div>
-                {% if session.get('tipo') == 'admin' %}
-                    <div class="col">
-                        <a href="{{ url_for('estoque') }}" class="shortcut-card">
-                            <div class="icon"><i class="fas fa-boxes-packing"></i></div>
-                            <h4>Estoque</h4>
-                        </a>
-                    </div>
-                {% endif %}
-                
-        
+        <!-- Seção de Mensagens -->
+        {% if mensagem %}
+            <div class="alert alert-success" role="alert">
+                {{ mensagem }}
             </div>
+        {% endif %}
+
+        <!-- Card de Inserção de Contato -->
+        <div class="card p-4">
+            <h3 class="mb-4">Adicionar Novo Contato</h3>
+            <form id="formAdicionarContato" action="{{ url_for('agenda_telefonica') }}" method="post">
+                <input type="hidden" name="add_contact" value="1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="nome_cliente" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="nome_cliente" name="nome_cliente" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="nome_responsavel" class="form-label">Nome do Responsável</label>
+                        <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel">
+                    </div>
+                    <div class="col-12">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" id="telefone" name="telefone">
+                    </div>
+                    <div class="col-12">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="col-12 mt-4 text-center">
+                        <button type="submit" id="btnAdicionarContato" class="btn btn-primary">Adicionar Contato</button>
+                    </div>
+
+                </div>
+            </form>
         </div>
 
+        <!-- Card de Filtro -->
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Contatos</h3>
+            <form id="formFiltrarContatos" action="{{ url_for('agenda_telefonica') }}" method="post">
+                <input type="hidden" name="filter_contacts" value="1">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="filtro_cliente" class="form-label">Nome do Cliente</label>
+                        <input type="text" class="form-control" id="filtro_cliente" name="filtro_cliente">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="filtro_responsavel" class="form-label">Nome do Responsável</label>
+                        <input type="text" class="form-control" id="filtro_responsavel" name="filtro_responsavel">
+                    </div>
+
+                    <div class="col-12 mt-4 text-center">
+                        <button type="submit" id="btnFiltrarContatos" class="btn btn-secondary">Filtrar</button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- Card da Lista de Contatos -->
+        <div class="card p-4">
+            <h3 class="mb-4">Lista de Contatos</h3>
+            {% if contatos %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Responsável</th>
+                            <th>Telefone</th>
+                            <th>Observações</th>
+                            <th>Data de Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contato in contatos %}
+                        <tr>
+                            <td>{{ contato.nome_cliente }}</td>
+                            <td>{{ contato.nome_responsavel }}</td>
+                            <td>{{ contato.telefone }}</td>
+                            <td>{{ contato.observacoes }}</td>
+                            <td>{{ contato.data_criacao }}</td>
+                            <td>
+                                <form action="{{ url_for('excluir_contato', contato_id=contato.id) }}" method="post" class="formExclusao" onsubmit="return confirm('Tem certeza que deseja excluir este contato?');">
+                                    <button type="submit" class="btn btn-danger btn-sm btnExcluir">
+                                        <i class="fas fa-trash-alt"></i> Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                Nenhum contato encontrado.
+            </div>
+            {% endif %}
+        </div>
 
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const menuToggle = document.querySelector('.menu-toggle');
-        const body = document.body;
-
-        menuToggle.addEventListener('click', function() {
-            body.classList.toggle('sidebar-open');
-        });
-
-        if ('serviceWorker' in navigator && 'PushManager' in window) {
-            // Ajuste o caminho se seu service-worker.js não estiver na raiz do domínio
-            navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-                console.log('Service Worker registrado com sucesso:', registration);
-                return registration;
-            })
-            // ... restante do código para pedir permissão e obter subscription ...
-            .catch(function(error) {
-                console.error('Erro no registro do Service Worker ou Push:', error);
-            });
-        } else {
-            console.warn('Este navegador não suporta Service Workers ou Push API.');
-        }
-
-        // Função auxiliar urlBase64ToUint8Array (mantê-la)
-        function urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding)
-                .replace(/\-/g, '+')
-                .replace(/_/g, '/');
-
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray [i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        }
-    </script>
-    <script>
-    // --- SCRIPT DE PRÉ-CARREGAMENTO (WARM-UP) ---
-    // Isso garante que as páginas importantes estejam no cache
-    // assim que o técnico logar com internet.
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        if (navigator.onLine && 'serviceWorker' in navigator) {
-            
-            // Lista de páginas que você quer que funcionem offline
-            const urlsParaSalvar = [
-                "{{ url_for('os_painel') }}",
-                "{{ url_for('controle_veiculos') }}",
-                "{{ url_for('rdv') }}",
-                // Adicione outras se precisar
-            ];
-
-            console.log('🔄 Pré-carregando páginas para uso offline...');
-
-            urlsParaSalvar.forEach(url => {
-                fetch(url)
-                    .then(response => {
-                        if (response.status === 200) {
-                            console.log('✅ Cacheado:', url);
-                        }
-                    })
-                    .catch(err => console.log('Ignorado:', url));
-            });
-        }
-    });
-</script>
 <script>
-    // --- FORÇAR CACHE DAS PÁGINAS PRINCIPAIS ---
-    // Coloque isso no final do os_painel.html ou menu.html
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        // Só roda se tiver internet e suporte a SW
-        if (navigator.onLine && 'serviceWorker' in navigator) {
-            
-            // Lista das páginas que OBRIGATORIAMENTE devem funcionar offline
-            const urlsParaSalvar = [
-                "{{ url_for('menu') }}",
-                "{{ url_for('os_painel') }}",
-                "{{ url_for('controle_veiculos') }}",
-                // Adicione outras rotas aqui se precisar
-            ];
+    // ==========================================================
+    // SEÇÃO 1: DECLARAÇÕES DE VARIÁVEIS E LÓGICA DO MENU LATERAL (SEU CÓDIGO ORIGINAL)
+    // ==========================================================
+    const menuToggle = document.querySelector('.menu-toggle');
+    const body = document.body;
 
-            // Abre o cache e força o download
-            caches.open('geramaster-cache-v4').then(cache => {
-                console.log('💾 Salvando páginas para uso offline...');
-                cache.addAll(urlsParaSalvar)
-                    .then(() => console.log('✅ Páginas salvas com sucesso!'))
-                    .catch(err => console.error('❌ Erro ao salvar páginas:', err));
+    menuToggle.addEventListener('click', function() {
+        body.classList.toggle('sidebar-open');
+    });
+
+    // ==========================================================
+    // SEÇÃO 2: PREVENÇÃO DE DUPLO CLIQUE (NOVO CÓDIGO)
+    // ==========================================================
+
+    /**
+     * Função reutilizável para desabilitar o botão de submit após o primeiro clique
+     * e evitar o envio de formulários duplicados.
+     */
+    function setupSingleSubmit(formId, buttonId, loadingText = "Por favor, aguarde...") {
+        const form = document.getElementById(formId);
+        const button = document.getElementById(buttonId);
+
+        if (form && button) {
+            form.addEventListener('submit', function() {
+                // Desabilita o botão
+                button.disabled = true;
+                // Altera o texto para feedback visual com spinner (Font Awesome)
+                button.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> ${loadingText}`;
+                // Altera o cursor do corpo para indicar que está em processamento
+                document.body.style.cursor = 'wait'; 
             });
         }
+    }
+    
+    // Configura o formulário de Adicionar Contato (IDs que adicionamos no HTML)
+    setupSingleSubmit('formAdicionarContato', 'btnAdicionarContato', "Adicionando...");
+
+    // Configura o formulário de Filtrar Contatos
+    setupSingleSubmit('formFiltrarContatos', 'btnFiltrarContatos', "Filtrando...");
+
+    // Trata os múltiplos botões de Exclusão (usando a classe 'formExclusao')
+    const deleteForms = document.querySelectorAll('.formExclusao');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            // Verifica se a confirmação do usuário (confirm no onsubmit) não foi cancelada
+            if (!event.defaultPrevented) { 
+                const button = form.querySelector('.btnExcluir');
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Excluindo...';
+                    document.body.style.cursor = 'wait';
+                }
+            }
+        });
     });
+
+    // ==========================================================
+    // SEÇÃO 3: SERVICE WORKER E FUNÇÕES AUXILIARES (SEU CÓDIGO ORIGINAL)
+    // ==========================================================
+
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        // Ajuste o caminho se seu service-worker.js não estiver na raiz do domínio
+        navigator.serviceWorker.register('/static/service-worker.js')
+        .then(function(registration) {
+            console.log('Service Worker registrado com sucesso:', registration);
+            return registration;
+        })
+        // ... restante do código para pedir permissão e obter subscription ...
+        .catch(function(error) {
+            console.error('Erro no registro do Service Worker ou Push:', error);
+        });
+    } else {
+        console.warn('Este navegador não suporta Service Workers ou Push API.');
+    }
+
+    // Função auxiliar urlBase64ToUint8Array (mantida)
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray [i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
 </script>
+
+    
+
 </body>
 </html>
