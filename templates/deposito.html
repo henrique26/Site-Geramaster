@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Depósitos - Geramaster</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#FFFFFF">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+    /* Paleta de Cores e Estilos Globais */
+    :root {
+        --cor-fundo: #F0F2F5;
+        --cor-primaria: #e60000;
+        --cor-primaria-hover: #cc0000;
+        --cor-texto: #212529;
+        --cor-subtitulo: #6c757d;
+        --cor-borda: #dee2e6;
+        --cor-nav-bg: #f8f9fa;
+        --cor-nav-texto: #6c757d;
+        --cor-nav-item-hover: #f1f3f5;
+        --cor-card-fundo: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--cor-fundo);
+        color: var(--cor-texto);
+        min-height: 100vh;
+        display: flex;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar - Menu Lateral */
+    .sidebar {
+        width: 280px;
+        min-width: 280px;
+        background-color: var(--cor-nav-bg);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--cor-borda);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100dvh;
+        padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */
+        overflow-y: auto;
+        z-index: 1000;
+        transition: left 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .sidebar-logo img {
+        max-width: 200px;
+        margin-bottom: 40px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        color: var(--cor-nav-texto);
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        margin-right: 15px;
+        width: 25px;
+        text-align: center;
+    }
+
+    .nav-link:hover {
+        background-color: var(--cor-nav-item-hover);
+        color: var(--cor-texto);
+    }
+
+    .nav-link.active {
+        background-color: rgba(230, 0, 0, 0.1);
+        color: var(--cor-primaria);
+        font-weight: 600;
+    }
+
+    .sidebar-bottom {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid var(--cor-borda);
+    }
+
+    .sidebar-bottom .nav-link {
+        color: var(--cor-subtitulo);
+    }
+
+    /* Conteúdo Principal */
+    .content {
+        flex-grow: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        width: 100%;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* Estilização dos blocos de conteúdo */
+    .card {
+        background-color: var(--cor-card-fundo);
+        border: 1px solid var(--cor-borda);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        padding: 25px;
+    }
+
+    .form-control, .form-select, .form-control:focus, .form-select:focus {
+        background-color: #f8f9fa;
+        color: var(--cor-texto);
+        border: 1px solid #ced4da;
+    }
+
+    .form-control::placeholder, .form-select::placeholder {
+        color: #adb5bd;
+    }
+
+    .form-label {
+        color: var(--cor-texto);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    h1, h2, h3, h4 {
+        color: var(--cor-texto);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .welcome-text {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .welcome-text small {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--cor-subtitulo);
+        display: block;
+        margin-top: 5px;
+    }
+
+    .btn-primary {
+        background-color: var(--cor-primaria);
+        border-color: var(--cor-primaria);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--cor-primaria-hover);
+        border-color: var(--cor-primaria-hover);
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .excluir {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .excluir:hover {
+        color: #a71d2a;
+        transform: scale(1.1);
+    }
+
+    /* Estilos da nova visualização (não-tabela) */
+    .registros-cards .registro-card {
+        background-color: var(--cor-card-fundo);
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .registros-cards .registro-card .card-header {
+        border-bottom: 1px solid var(--cor-borda);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .registros-cards .registro-card .card-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .registros-cards .registro-card .card-body div {
+        margin-bottom: 10px;
+    }
+
+    .registros-cards .registro-card .card-body strong {
+        display: block;
+        color: var(--cor-subtitulo);
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .registros-cards .registro-card .card-body span {
+        display: block;
+        color: var(--cor-texto);
+        font-weight: 600;
+    }
+
+    /* Oculta a tabela e exibe os cartões apenas em telas pequenas */
+    .table-responsive {
+        display: block;
+    }
+
+    .registros-cards {
+        display: none;
+    }
+
+    @media (max-width: 991px) {
+        .table-responsive {
+            display: none;
+        }
+
+        .registros-cards {
+            display: block;
+        }
+    }
+
+    /* Estilos para o menu hambúrguer e responsividade */
+    .menu-toggle {
+        background: none;
+        border: none;
+        color: var(--cor-texto);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 10px;
+        display: none; /* Escondido por padrão em telas grandes */
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1002;
+    }
+
+    .menu-toggle:focus {
+        outline: none;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Esconde a sidebar para a esquerda */
+            height: 100%;
+            transition: left 0.3s ease-in-out;
+            z-index: 1001;
+        }
+
+        .sidebar-open .sidebar {
+            left: 0; /* Mostra a sidebar quando a classe 'sidebar-open' está no body */
+        }
+
+        .menu-toggle {
+            display: block; /* Mostra o botão do menu */
+        }
+
+        .content {
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-left: 0;
+            transition: transform 0.3s ease-in-out;
+            padding-top: 60px; /* Adiciona espaço no topo para o botão não sobrepor o texto */
+        }
+
+        .sidebar-open .content {
+            transform: translateX(280px); /* Empurra o conteúdo para a direita com 'transform' */
+            pointer-events: none; /* Desabilita cliques no conteúdo quando o menu está aberto */
+        }
+
+        body.sidebar-open::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+        }
+
+        .sidebar-bottom {
+            border-top: none;
+            padding-top: 0;
+            text-align: center;
+        }
+    }
+</style>
+</head>
+
+<body>
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster">
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link active">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+        
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content container">
+        <div class="main-header">
+            <h1 class="welcome-text">Registro de Depósitos</h1>
+        </div>
+        
+        
+
+        {% if tipo_usuario == 'admin' %}
+        <div class="card p-4">
+            <h3 class="mb-4">Registrar Novo Depósito</h3>
+            <form method="POST" id="registroForm" action="{{ url_for('deposito') }}" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Técnico</label>
+                    <select name="usuario" id="usuario" class="form-select" required>
+                        <option value="" disabled selected>Selecione um técnico</option>
+                        {% for tecnico in tecnicos_disponiveis %}
+                            <option value="{{ tecnico.usuario }}">{{ tecnico.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Por favor, selecione um técnico.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="valor" class="form-label">Valor</label>
+                    <input type="text" name="valor" id="valor" class="form-control" placeholder="Ex: 100,50 ou 100.50" required pattern="[0-9]+([,\.][0-9]{1,2})?" />
+                    <div class="invalid-feedback">Informe um valor válido (ex: 100,50).</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="data" class="form-label">Data</label>
+                    <input type="date" name="data" id="data" class="form-control" required />
+                    <div class="invalid-feedback">Informe a data do depósito.</div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary w-100">Registrar Depósito</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Depósitos</h3>
+            <form action="{{ url_for('deposito') }}" id="registroForm" method="get" class="row g-3">
+                {% if tipo_usuario == 'admin' %}
+                    <div class="col-md-4">
+                        <label for="filtro_usuario" class="form-label">Técnico:</label>
+                        <select class="form-select" id="filtro_usuario" name="filtro_usuario">
+                            <option value="">Todos</option>
+                            {% for tecnico in tecnicos_disponiveis %}
+                                <option value="{{ tecnico.usuario }}" {% if filtro_usuario_selected == tecnico.usuario %}selected{% endif %}>
+                                    {{ tecnico.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="col-md-4">
+                        <label for="filtro_usuario_disabled" class="form-label">Técnico:</label>
+                        <input type="text" class="form-control" id="filtro_usuario_disabled" value="{{ usuario_logado_username }}" disabled>
+                    </div>
+                {% endif %}
+
+                <div class="col-md-4">
+                    <label for="filtro_data_inicio" class="form-label">Data Início:</label>
+                    <input type="date" class="form-control" id="filtro_data_inicio" name="filtro_data_inicio" value="{{ filtro_data_inicio }}">
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filtro_data_fim" class="form-label">Data Fim:</label>
+                    <input type="date" class="form-control" id="filtro_data_fim" name="filtro_data_fim" value="{{ filtro_data_fim }}">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" id="submitBtn" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    <a href="{{ url_for('deposito') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="d-none d-lg-block">
+            <h3 class="mb-4">Histórico de Depósitos</h3>
+            {% if depositos %}
+            <div class="table-responsive card p-4">
+                <table class="table table-striped text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Valor (R$)</th>
+                            <th>Data</th>
+                            {% if tipo_usuario == 'admin' %}
+                            <th>Depositado Por</th>
+                            <th class="text-center">Ações</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for deposito in depositos %}
+                        <tr>
+                            <td>{{ deposito.tecnico_nome_completo or deposito.tecnico_username }}</td>
+                            <td>R$ {{ "%.2f"|format(deposito.valor)|replace('.', ',') }}</td>
+                            <td>{{ deposito.data.strftime('%d/%m/%Y') }}</td>
+                            {% if tipo_usuario == 'admin' %}
+                            <td>{{ deposito.admin_nome_completo or deposito.admin_responsavel or 'N/A' }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('deletar_deposito', deposito_id=deposito.id) }}" onsubmit="return confirm('Confirma exclusão deste depósito?');" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Excluir</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    Nenhum depósito encontrado.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="d-lg-none">
+            <h3 class="mb-4">Histórico de Depósitos</h3>
+            {% if depositos %}
+            <div class="registros-cards">
+                {% for deposito in depositos %}
+                    <div class="registro-card">
+                        <div class="card-header">
+                            <h5>Depósito de R$ {{ "%.2f"|format(deposito.valor)|replace('.', ',') }}</h5>
+                            <form method="POST" id="registroForm" action="{{ url_for('deletar_deposito', deposito_id=deposito.id) }}" onsubmit="return confirm('Confirma exclusão deste depósito?');" style="display:inline;">
+                                <button type="submit" id="submitBtn" class="btn btn-danger btn-sm">🗑️</button>
+                            </form>
+                        </div>
+                        <div class="card-body row">
+                            <div class="col-12">
+                                <strong>Técnico:</strong>
+                                <span>{{ deposito.tecnico_nome_completo or deposito.tecnico_username }}</span>
+                            </div>
+                            <div class="col-12">
+                                <strong>Data:</strong>
+                                <span>{{ deposito.data.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                            {% if tipo_usuario == 'admin' %}
+                                <div class="col-12 mt-2">
+                                    <strong>Depositado Por:</strong>
+                                    <span>{{ deposito.admin_nome_completo or deposito.admin_responsavel or 'N/A' }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center" role="alert">
+                Nenhum depósito encontrado para os filtros selecionados.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Bootstrap 5 form validation
+        (() => {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Adiciona funcionalidade para permitir vírgula ou ponto no input de valor
+        document.addEventListener('DOMContentLoaded', function() {
+            const valorInput = document.getElementById('valor');
+            if (valorInput) {
+                valorInput.addEventListener('change', function() {
+                    this.value = this.value.replace(',', '.');
+                });
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registroForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            // Desabilita o botão e muda o texto para dar feedback visual
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Aguarde... Salvando...'; 
+            // O formulário continua o envio normalmente
+        });
+    }
+});
+    // Bootstrap 5 form validation
+    (() => {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Adiciona funcionalidade para permitir vírgula ou ponto no input de valor
+    document.addEventListener('DOMContentLoaded', function() {
+        const valorInput = document.getElementById('valor');
+        if (valorInput) {
+            valorInput.addEventListener('change', function() {
+                this.value = this.value.replace(',', '.');
+            });
+        }
+    });
+
+    // JavaScript para o menu hambúrguer
+    const menuToggle = document.querySelector('.menu-toggle');
+    const body = document.body;
+
+    menuToggle.addEventListener('click', function() {
+        body.classList.toggle('sidebar-open');
+    });
+
+    // Opcional: Adiciona um ouvinte de clique no overlay (se o overlay estiver ativo) para fechar o menu
+    body.addEventListener('click', function(event) {
+        if (body.classList.contains('sidebar-open') && !event.target.closest('.sidebar') && !event.target.closest('.menu-toggle')) {
+            body.classList.remove('sidebar-open');
+        }
+    });
+</script>
+</body>
+</html>
