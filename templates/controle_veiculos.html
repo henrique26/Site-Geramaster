@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Veículos - Geramaster</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <!-- PWA Manifest e Ícone -->
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        /* Paleta de Cores e Estilos Globais */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar - Menu Lateral */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100dvh;
+            padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-logo img {
+            max-width: 200px;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .nav-link:hover {
+            background-color: var(--cor-nav-item-hover);
+            color: var(--cor-texto);
+        }
+
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--cor-borda);
+        }
+
+        .sidebar-bottom .nav-link {
+            color: var(--cor-subtitulo);
+        }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        /* Estilização dos blocos de conteúdo */
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #f8f9fa;
+            color: var(--cor-texto);
+            border: 1px solid #ced4da;
+        }
+
+        .form-control::placeholder, .form-select::placeholder {
+            color: #adb5bd;
+        }
+
+        .form-label {
+            color: var(--cor-texto);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cor-texto);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .welcome-text small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--cor-subtitulo);
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Estilos de Tabela para Responsividade */
+        .table th, .table td {
+            border-right: 1px solid #dee2e6;
+        }
+
+        .table th:last-child, .table td:last-child {
+            border-right: none;
+        }
+        
+        /* Estilos para o menu hambúrguer e responsividade */
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--cor-texto);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            display: none; /* Escondido por padrão em telas grandes */
+        }
+
+        .menu-toggle:focus {
+            outline: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            width: 100%; /* Ocupa toda a largura em telas pequenas */
+        }
+
+        /* Esconde a navegação por padrão em telas pequenas */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px; /* Esconde a sidebar para a esquerda */
+                height: 100%;
+                transition: left 0.3s ease-in-out;
+            }
+
+            .sidebar-open .sidebar {
+                left: 0; /* Mostra a sidebar quando a classe 'sidebar-open' está no body */
+            }
+
+            .menu-toggle {
+                display: block; /* Mostra o botão do menu */
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001; /* Acima do sidebar */
+            }
+
+            .content {
+                padding-left: 20px;
+                padding-right: 20px;
+                margin-left: 0;
+                transition: margin-left 0.3s ease-in-out;
+                padding-top: 60px; /* Adiciona espaço no topo para o botão não sobrepor o texto */
+            }
+
+            .sidebar-open .content {
+                margin-left: 280px; /* Empurra o conteúdo para a direita quando o menu está aberto */
+            }
+
+            .sidebar-logo {
+                text-align: center;
+            }
+
+            .sidebar-bottom {
+                border-top: none;
+                padding-top: 0;
+                text-align: center;
+            }
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Botão de menu hamburguer para telas pequenas -->
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Barra de navegação lateral -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link active">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom sidebar-nav">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Conteúdo principal da página -->
+    <div class="content container">
+        <div class="main-header">
+            <h1 class="welcome-text">Controle de Veículos</h1>
+        </div>
+        
+        <!-- Formulário de Registro de Manutenção -->
+        <div class="card p-4">
+            <h3 class="mb-4">Registro de Manutenção e Abastecimento</h3>
+            <form method="POST" id="registroForm" class="form-bloqueio">
+                <input type="hidden" name="acao" value="salvar_registro">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="placa" class="form-label">Placa:</label>
+                        <select name="placa" id="placa" class="form-select" required>
+                            <option value="">Selecione a Placa</option>
+                            {% for placa_option in placas %}
+                            <option value="{{ placa_option }}">{{ placa_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tipo_registro" class="form-label">Tipo de Registro:</label>
+                        <select name="tipo_registro" id="tipo_registro" class="form-select" required>
+                            {% if user_type == 'tecnico' %}
+                            <option value="abastecimento">Abastecimento</option>
+                            {% else %}
+                            <option value="abastecimento">Abastecimento</option>
+                            <option value="troca_oleo">Troca de Óleo</option>
+                            <option value="manutencao">Manutenção Geral</option>
+                            <option value="outros">Outros</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="data" class="form-label">Data:</label>
+                        <input type="date" class="form-control" id="data" name="data" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="km" class="form-label">Km:</label>
+                        <input type="text" class="form-control" id="km" name="km" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="litros" class="form-label">Litros:</label>
+                        <input type="number" step="0.01" class="form-control" id="litros" name="litros">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="valor" class="form-label">Valor:</label>
+                        <input type="number" step="0.01" class="form-control" id="valor" name="valor">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="observacoes" class="form-label">Observações:</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
+
+                <form method="POST" id="registroForm"> 
+                    <input type="hidden" name="acao" value="salvar_registro">
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary w-100" id="submitBtn">Salvar Registro</button>
+                    </div>
+                </form>
+            </form>
+        </div>
+
+        <!-- Formulário de Filtro de Registros -->
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Registros</h3>
+            <form method="GET" class="row g-3 align-items-end form-bloqueio">
+                <div class="col-md-3 col-sm-6">
+                    <label for="placa_filtro" class="form-label">Filtrar por Placa:</label>
+                    <select name="placa_filtro" id="placa_filtro" class="form-select">
+                        <option value="">Todas as Placas</option>
+                        {% for placa_option in placas %}
+                        <option value="{{ placa_option }}" {% if placa_option == filtro_placa %}selected{% endif %}>{{ placa_option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <label for="data_filtro" class="form-label">Filtrar por Data:</label>
+                    <input type="date" class="form-control" id="data_filtro" name="data_filtro" value="{{ filtro_data }}">
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <label for="tipo_filtro" class="form-label">Filtrar por Tipo:</label>
+                    <select name="tipo_filtro" id="tipo_filtro" class="form-select">
+                        {% if user_type == 'tecnico' %}
+                        <option value="abastecimento" selected>Abastecimento</option>
+                        {% else %}
+                        <option value="">Todos</option>
+                        <option value="abastecimento" {% if filtro_tipo == 'abastecimento' %}selected{% endif %}>Abastecimento</option>
+                        <option value="troca_oleo" {% if filtro_tipo == 'troca_oleo' %}selected{% endif %}>Troca de Óleo</option>
+                        <option value="manutencao" {% if filtro_tipo == 'manutencao' %}selected{% endif %}>Manutenção Geral</option>
+                        <option value="outros" {% if filtro_tipo == 'outros' %}selected{% endif %}>Outros</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <label for="tecnico_filtro" class="form-label">Filtrar por Técnico:</label>
+                    {% if user_type == 'tecnico' %}
+                    <input type="text" class="form-control" id="tecnico_filtro" name="tecnico_filtro" value="{{ session.get('nome') or session.get('usuario') }}" readonly>
+                    {% else %}
+                    <select name="tecnico_filtro" id="tecnico_filtro" class="form-select">
+                        <option value="">Todos os Técnicos</option>
+                        {% for tecnico in tecnicos %}
+                        <option value="{{ tecnico }}" {% if tecnico == filtro_tecnico %}selected{% endif %}>{{ tecnico }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    <a href="{{ url_for('controle_veiculos') }}" class="btn btn-secondary"><i class="fas fa-eraser form-bloqueio"></i> Limpar Filtros</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela de Histórico de Registros com responsividade corrigida -->
+        <h3 class="mb-4">Histórico de Registros</h3>
+        <div class="card p-4">
+            <!-- A classe table-responsive garante rolagem horizontal em telas pequenas -->
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Técnico</th>
+                            <th>Tipo</th>
+                            <th>Data</th>
+                            <th>Km</th>
+                            <th>Litros</th>
+                            <th>Valor (R$)</th>
+                            {% if user_type == 'admin' %}
+                            <th>Valor por Litro (R$)</th>
+                            {% endif %}
+                            <th>Consumo (Km/L)</th>
+                            {% if user_type == 'admin' %}
+                            <th>Custo por KM (R$)</th>
+                            {% endif %}
+                            <th>Próxima troca Km</th>
+                            <th>Próxima troca Data</th>
+                            <th>Observações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r[1] }}</td>
+                            <td>{{ r[2] }}</td>
+                            <td>{{ r[3] }}</td>
+                            <td>{{ r[4].strftime('%d/%m/%Y') if r[4] else '-' }}</td>
+                            <td>{{ r[5] }}</td>
+                            <td>{{ "%.2f"|format(r[6]) if r[6] is not none else '-' }}</td>
+                            <td>R$ {{ "%.2f"|format(r[7]) if r[7] is not none else '0.00' }}</td>
+                            {% if user_type == 'admin' %}
+                            <td>{{ r[13] if r[3] == 'abastecimento' and r|length > 13 and r[13] != '-' else '-' }}</td>
+                            {% endif %}
+                            <td>
+                                {% if r[3] == 'abastecimento' %}
+                                {{ r[12] if r|length > 12 and r[12] != '-' else '-' }}
+                                {% else %} - {% endif %}
+                            </td>
+                            {% if user_type == 'admin' %}
+                            <td>{{ r[14] if r|length > 14 and r[14] != '-' else '-' }}</td>
+                            {% endif %}
+                            <td>{{ r[8] if r[8] is not none else '-' }}</td>
+                            <td>{{ r[9].strftime('%d/%m/%Y') if r[9] else '-' }}</td>
+                            <td class="observacoes-cell">{{ r[10] or '-' }}</td>
+                            <td>
+                                {% if user_type == 'admin' or (user_type == 'tecnico' and r[11] == user_id_logado and r[3] == 'abastecimento') %}
+                                <form method="POST" class="actions-form form-bloqueio" onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
+                                    <input type="hidden" name="acao" value="excluir_registro" />
+                                    <input type="hidden" name="id_registro" value="{{ r[0] }}" />
+                                    <button type="submit" class="excluir">🗑️</button>
+                                </form>
+                                {% else %} - {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="15">Nenhum registro encontrado para os filtros aplicados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Seção de Relatórios de Consumo e Custo para Admin -->
+        {% if user_type == 'admin' %}
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h4 class="mb-4">Consumo Médio por Veículo</h4>
+                    <ul class="list-unstyled">
+                        {% for placa, consumo in consumo_por_placa.items() %}
+                        {% if consumo != 'N/A' %}
+                        <li><strong>{{ placa }}:</strong> {{ consumo }} Km/L</li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h4 class="mb-4">Custo Médio KM por Placa</h4>
+                    <ul class="list-unstyled">
+                        {% for placa, custo in custo_por_km_por_placa.items() %}
+                        {% if custo != 'N/A' %}
+                        <li><strong>{{ placa }}:</strong> {{ custo }}</li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Totais por Placa -->
+        <div class="card p-4">
+            <h4 class="mb-4">Totais por Placa</h4>
+            <ul class="list-group list-group-flush list-unstyled">
+                {% for placa, dados in dados_por_placa_para_totais.items() %}
+                <li class="list-group-item bg-light text-dark mb-2 rounded-3">
+                    <h6 class="mb-2 text-primary">{{ placa }}</h6>
+                    <div class="row w-100 mx-0">
+                        <div class="col-md-4 col-sm-12 d-flex flex-column align-items-start">
+                            <small class="text-secondary">KM Total Rodado:</small>
+                            <strong class="text-success">{{ "{:,.0f}".format(dados['total_km_rodados']).replace(",", ".") }} KM</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-12 d-flex flex-column align-items-center">
+                            <small class="text-secondary">Custo Total:</small>
+                            <strong class="text-danger">R$ {{ "{:,.2f}".format(dados['total_valor_gasto']).replace(",", "X").replace(".", ",").replace("X", ".") }}</strong>
+                        </div>
+                        <div class="col-md-4 col-sm-12 d-flex flex-column align-items-end">
+                            <small class="text-secondary">Média Litro:</small>
+                            <strong class="text-info">R$ {{ "{:,.2f}".format(dados['media_valor_litro']).replace(",", "X").replace(".", ",").replace("X", ".") }}</strong>
+                        </div>
+                    </div>
+                </li>
+                {% else %}
+                <li class="list-group-item bg-light text-dark text-center">Nenhum dado de total por placa disponível.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Seção de Próximas Trocas de Óleo -->
+        <div class="card p-4">
+            <h4 class="mb-4">Próximas Trocas de Óleo por Veículo</h4>
+            {% if proximas_trocas_oleo %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>KM Restantes para Troca</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for troca in proximas_trocas_oleo %}
+                        <tr>
+                            <td>{{ troca.placa }}</td>
+                            <td>
+                                <span class="{% if troca.km_restantes == 'VENCIDO' %}vencido{% endif %}">
+                                    {{ troca.km_restantes }} KM
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Nenhum dado de próxima troca de óleo disponível.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+<script src="/offline-sync.js" defer></script>
+
+<script>
+    // 1. Redirecionamento Pós-Salvamento (RDV)
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const acaoRdv = urlParams.get('acao_rdv');
+
+        if (acaoRdv === 'confirmar') {
+            // Boa prática: Limpa a URL antes de qualquer ação para evitar repetição do prompt em recarga.
+            // Se o usuário clicar em "Sim", o redirecionamento muda a URL de qualquer forma.
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            const addRdv = confirm("Registro de abastecimento salvo com sucesso! Gostaria de adicionar o valor na página de RDV?");
+ 
+            if (addRdv) {
+                // Monta a URL para a nova rota, passando os dados
+                const placa = urlParams.get('placa');
+                const data = urlParams.get('data');
+                const valor = urlParams.get('valor');
+                const km = urlParams.get('km'); 
+                const usuario = urlParams.get('usuario');
+
+                // Redireciona com os dados
+                window.location.href = `/adicionar_rdv_do_veiculo?placa=${placa}&data=${data}&valor=${valor}&km=${km}&usuario=${usuario}`;
+            }
+        }
+    });
+
+    // 2. Formatação de KM (separador de milhar pt-BR)
+    // Usando a versão mais limpa com toLocaleString para formatação
+    document.getElementById('km').addEventListener('input', function (e) {
+        // Remove tudo que não for dígito
+        let rawValue = e.target.value.replace(/\D/g, '');
+        
+        if (rawValue) {
+            // Converte para Number e aplica a formatação pt-BR (separador de milhar é '.')
+            let num = Number(rawValue); 
+            e.target.value = num.toLocaleString('pt-BR');
+        } else {
+            e.target.value = '';
+        }
+    });
+
+    // 3. Toggle de campos Required (litros e valor)
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoRegistroSelect = document.getElementById('tipo_registro');
+        const litrosInput = document.getElementById('litros');
+        const valorInput = document.getElementById('valor');
+
+        function toggleRequiredFields() {
+            if (tipoRegistroSelect.value === 'abastecimento') {
+                litrosInput.setAttribute('required', 'required');
+                valorInput.setAttribute('required', 'required');
+            } else {
+                litrosInput.removeAttribute('required');
+                valorInput.removeAttribute('required');
+            }
+        }
+        toggleRequiredFields();
+        tipoRegistroSelect.addEventListener('change', toggleRequiredFields);
+    });
+
+    // 4. Prevenção de Duplo Clique
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registroForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                // Desabilita o botão e muda o texto para dar feedback visual
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Aguarde... Salvando...'; 
+                // O formulário continua o envio normalmente
+            });
+        }
+    });
+    
+    // 5. Toggle do Menu (sidebar)
+    const menuToggle = document.querySelector('.menu-toggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-open');
+        });
+    }
+</script>
+
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h3 class="text-light mt-3">Processando... Aguarde!</h3>
+    <p class="text-white-50 small">Não feche a página.</p>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Pega todos os formulários que têm a classe 'form-bloqueio'
+        const forms = document.querySelectorAll('.form-bloqueio');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                // Se o formulário for inválido (campos obrigatórios vazios), NÃO bloqueia
+                if (!this.checkValidity()) {
+                    return;
+                }
+
+                // Se estiver tudo ok, mostra a tela de bloqueio
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'flex';
+                
+                // (Opcional) Desabilita o botão de enviar para garantir
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = 'Enviando...';
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Clientes - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; --cor-card-fundo: #fff; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        /* Sidebar Padrão */
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; height: 100dvh; padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */ overflow-y: auto; z-index: 1000; }
+        .sidebar-logo { margin-bottom: 40px; text-align: center; }
+        .sidebar-logo img { max-width: 180px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #6c757d; font-weight: 500; text-decoration: none; transition: 0.2s; }
+        .nav-link:hover { background-color: #f1f3f5; color: #212529; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        .card { background-color: var(--cor-card-fundo); border: 1px solid #dee2e6; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px; padding: 25px; }
+        
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; transition: left 0.3s; }
+            .sidebar.open { left: 0; }
+            .menu-toggle { display: block; }
+            .content { padding: 60px 20px 20px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo">
+        </div>
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link active">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="mt-auto pt-3 border-top">
+            <a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Gestão de Clientes</h2>
+            <div>
+                <a href="{{ url_for('novo_cliente') }}" class="btn btn-success"><i class="fas fa-plus"></i> Novo Cliente</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card p-3 mb-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Digite para filtrar por nome, endereço ou telefone...">
+            </div>
+        </div>
+
+        <div class="card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="clientesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3 ps-4">Nome / Razão Social</th>
+                            <th class="py-3">Endereço</th>
+                            <th class="py-3">Contato</th>
+                            <th class="py-3 text-center">Frota</th>
+                            <th class="py-3 text-end pe-4">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in clientes %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">{{ c.nome_cliente }}</td>
+                            <td><small class="text-muted">{{ c.endereco or '-' }}</small></td>
+                            <td>{{ c.contato or '-' }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary rounded-pill">{{ c.qtd_equips }} Equip.</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{{ url_for('visualizar_cliente', cliente_id=c.id) }}" class="btn btn-sm btn-light border me-1" title="Ver Detalhes">
+                                    <i class="fas fa-eye text-dark"></i>
+                                </a>
+                                <a href="{{ url_for('editar_cliente', cliente_id=c.id) }}" class="btn btn-sm btn-warning text-white" title="Editar">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="no-results">
+                            <td colspan="5" class="text-center py-5 text-muted">Nenhum cliente cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+        // --- SCRIPT DE FILTRO RÁPIDO ---
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#clientesTable tbody tr');
+
+            rows.forEach(function(row) {
+                // Ignora a linha de "Nenhum resultado" se ela existir
+                if (row.classList.contains('no-results')) return;
+
+                let text = row.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
