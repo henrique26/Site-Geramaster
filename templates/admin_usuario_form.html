@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro de Usuário - Geramaster{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <h3 class="mb-4">{% if usuario %}Editar{% else %}Novo{% endif %} Usuário</h3>
+            
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" name="nome" class="form-control" required 
+                           value="{{ usuario['nome'] if usuario else '' }}">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Login (Usuário)</label>
+                        <input type="text" name="usuario" class="form-control" required 
+                               value="{{ usuario['usuario'] if usuario else '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipo de Acesso</label>
+                        <select name="tipo" class="form-select">
+                            <option value="tecnico" {% if usuario and usuario['tipo'] == 'tecnico' %}selected{% endif %}>Técnico</option>
+                            <option value="admin" {% if usuario and usuario['tipo'] == 'admin' %}selected{% endif %}>Administrador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Senha</label>
+                    <input type="password" name="senha" class="form-control" 
+                           placeholder="{% if usuario %}Deixe vazio para manter a atual{% else %}Crie uma senha{% endif %}">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">ID Vendedor (Bling)</label>
+                    <input type="text" name="bling_id" class="form-control" 
+                           value="{{ usuario['bling_id'] if usuario else '' }}"
+                           placeholder="Opcional">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg">Salvar Usuário</button>
+                    <a href="{{ url_for('admin_usuarios') }}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

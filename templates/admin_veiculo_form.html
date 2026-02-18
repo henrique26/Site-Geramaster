@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro de Veículo - Geramaster{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <h3 class="mb-4">{% if veiculo %}Editar{% else %}Novo{% endif %} Veículo</h3>
+            
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Placa do Veículo</label>
+                    <input type="text" name="placa" class="form-control form-control-lg" required 
+                           value="{{ veiculo['placa'] if veiculo else '' }}" 
+                           placeholder="ABC-1234" maxlength="8" style="text-transform: uppercase;">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Modelo (Opcional)</label>
+                    <input type="text" name="modelo" class="form-control" 
+                           value="{{ veiculo['modelo'] if veiculo else '' }}"
+                           placeholder="Ex: Fiat Fiorino">
+                </div>
+
+                <div class="mb-4 form-check form-switch">
+                    <input type="checkbox" name="ativo" class="form-check-input" id="ativoCheck"
+                           {% if not veiculo or veiculo['ativo'] %}checked{% endif %}>
+                    <label class="form-check-label" for="ativoCheck">Veículo Ativo no sistema?</label>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg">Salvar Veículo</button>
+                    <a href="{{ url_for('admin_veiculos') }}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

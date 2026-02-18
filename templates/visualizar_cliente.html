@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha do Cliente - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; --cor-card-fundo: #fff; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; z-index: 1000; }
+        .sidebar-logo { margin-bottom: 40px; text-align: center; } .sidebar-logo img { max-width: 180px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: #6c757d; font-weight: 500; text-decoration: none; border-radius: 8px; transition: 0.2s; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+        .nav-link i { margin-right: 15px; width: 25px; text-align: center; }
+        
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        .card { background-color: var(--cor-card-fundo); border: 1px solid #dee2e6; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px; }
+        
+        /* Estilo para os Labels dos cards de equipamento */
+        .info-label { font-size: 0.75rem; color: #6c757d; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+        .info-value { font-size: 0.95rem; font-weight: 500; color: #212529; margin-bottom: 10px; }
+        .equip-header { background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 15px; border-radius: 8px 8px 0 0; }
+        .divider { border-top: 1px dashed #dee2e6; margin: 10px 0; }
+
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; transition: left 0.3s; } .sidebar.open { left: 0; } .menu-toggle { display: block; } .content { padding: 60px 20px; } }
+    </style>
+</head>
+
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo"></div>
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link active">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+        </nav>
+        <div class="mt-auto pt-3 border-top">
+            <a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+    </div>
+
+    <div class="content">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Ficha do Cliente</h2>
+            <div>
+                <a href="{{ url_for('listar_clientes') }}" class="btn btn-outline-secondary me-2">Voltar</a>
+                <a href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}" class="btn btn-warning text-white shadow-sm">
+                    <i class="fas fa-pencil-alt me-2"></i> Editar
+                </a>
+            </div>
+        </div>
+
+        <div class="card mb-5 p-4 border-start border-4 border-primary">
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label class="info-label text-primary">Nome / Razão Social</label>
+                    <div class="fs-4 fw-bold">{{ cliente.nome_cliente }}</div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <label class="info-label">Contato</label>
+                    <div class="fs-6"><i class="fas fa-phone-alt text-success me-2"></i> {{ cliente.contato or '-' }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="info-label">Endereço</label>
+                    <div class="fs-6">
+                        {{ cliente.endereco or '-' }}
+                        {% if cliente.endereco %}
+                        <a href="https://waze.com/ul?q={{ cliente.endereco }}" target="_blank" class="ms-2 text-info" title="Abrir no Waze">
+                            <i class="fab fa-waze fa-lg"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+            <h4 class="text-secondary fw-bold mb-0 me-3"><i class="fas fa-server me-2"></i>Frota de Equipamentos</h4>
+            <span class="badge bg-secondary rounded-pill">{{ equipamentos|length }} Unidades</span>
+        </div>
+
+        {% if equipamentos %}
+        <div class="row g-4">
+            {% for eq in equipamentos %}
+            <div class="col-xl-6">
+                <div class="card h-100 shadow-sm border-0">
+                    
+                    <div class="equip-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ eq.nome_equipamento }}</h5>
+                            <small class="text-muted">Tag: {{ eq.tag or 'S/T' }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary fs-6">{{ eq.potencia_kva or '?' }} KVA</span>
+                            <div class="small text-muted mt-1">{{ eq.regime_operacao or '-' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6 border-end">
+                                <div class="mb-3">
+                                    <h6 class="text-secondary fw-bold small"><i class="fas fa-info-circle me-1"></i> GERAL</h6>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="info-label">Série Principal</div>
+                                            <div class="info-value">{{ eq.numero_serie_principal or '-' }}</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="info-label">Fabricante</div>
+                                            <div class="info-value">{{ eq.fabricante or '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="divider"></div>
+                                <div>
+                                    <h6 class="text-secondary fw-bold small"><i class="fas fa-cogs me-1"></i> MOTOR</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="info-label">Modelo</div>
+                                            <div class="info-value">{{ eq.motor_modelo or '-' }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="info-label">Série</div>
+                                            <div class="info-value">{{ eq.motor_numero_serie or '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 ps-sm-3">
+                                <div class="mb-3">
+                                    <h6 class="text-secondary fw-bold small"><i class="fas fa-bolt me-1"></i> GERADOR</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="info-label">Modelo</div>
+                                            <div class="info-value">{{ eq.gerador_modelo or '-' }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="info-label">Série</div>
+                                            <div class="info-value">{{ eq.gerador_numero_serie or '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="divider"></div>
+                                <div>
+                                    <h6 class="text-secondary fw-bold small"><i class="fas fa-microchip me-1"></i> COMANDO / ELÉTRICA</h6>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="info-label">Controlador</div>
+                                            <div class="info-value">{{ eq.unidade_controle or '-' }}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="info-label">VCA</div>
+                                            <div class="info-value">{{ eq.tensao_vca or '-' }}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="info-label">VCC</div>
+                                            <div class="info-value">{{ eq.tensao_vcc_comando or '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-light border text-center py-5">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <p class="mb-0 text-muted">Este cliente ainda não possui equipamentos cadastrados.</p>
+            <a href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}" class="btn btn-sm btn-primary mt-3">Cadastrar Agora</a>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+    </script>
+</body>
+</html>
