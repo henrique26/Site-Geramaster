@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Frota - Geramaster{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Gerenciar Frota</h2>
+        <p class="text-muted">Cadastro e controle de placas</p>
+    </div>
+    <a href="{{ url_for('admin_veiculo_form') }}" class="btn btn-danger">
+        <i class="fas fa-plus"></i> Novo Veículo
+    </a>
+</div>
+
+<div class="card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Placa</th>
+                    <th>Modelo</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in veiculos %}
+                <tr>
+                    <td class="ps-4 fw-bold">{{ v['placa'] }}</td>
+                    <td>{{ v['modelo'] or '-' }}</td>
+                    <td>
+                        {% if v['ativo'] %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <a href="{{ url_for('admin_veiculo_form', id=v['id']) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('admin_veiculo_excluir', id=v['id']) }}" class="btn btn-sm btn-outline-danger" 
+                           onclick="return confirm('Tem certeza que deseja excluir este veículo?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">Nenhum veículo cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

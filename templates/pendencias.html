@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pendências - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+    /* Paleta de Cores e Estilos Globais */
+    :root {
+        --cor-fundo: #F0F2F5;
+        --cor-primaria: #e60000;
+        --cor-primaria-hover: #cc0000;
+        --cor-texto: #212529;
+        --cor-subtitulo: #6c757d;
+        --cor-borda: #dee2e6;
+        --cor-nav-bg: #f8f9fa;
+        --cor-nav-texto: #6c757d;
+        --cor-nav-item-hover: #f1f3f5;
+        --cor-card-fundo: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--cor-fundo);
+        color: var(--cor-texto);
+        min-height: 100vh;
+        display: flex;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar - Menu Lateral */
+    .sidebar {
+        width: 280px;
+        min-width: 280px;
+        background-color: var(--cor-nav-bg);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--cor-borda);
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100dvh;
+        padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */
+        overflow-y: auto;
+        z-index: 1000;
+        transition: left 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .sidebar-logo img {
+        max-width: 200px;
+        margin-bottom: 40px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        color: var(--cor-nav-texto);
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        margin-right: 15px;
+        width: 25px;
+        text-align: center;
+    }
+
+    .nav-link:hover {
+        background-color: var(--cor-nav-item-hover);
+        color: var(--cor-texto);
+    }
+
+    .nav-link.active {
+        background-color: rgba(230, 0, 0, 0.1);
+        color: var(--cor-primaria);
+        font-weight: 600;
+    }
+
+    .sidebar-bottom {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid var(--cor-borda);
+    }
+
+    .sidebar-bottom .nav-link {
+        color: var(--cor-subtitulo);
+    }
+
+    /* Conteúdo Principal */
+    .content {
+        flex-grow: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        width: 100%;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* Estilização dos blocos de conteúdo */
+    .card {
+        background-color: var(--cor-card-fundo);
+        border: 1px solid var(--cor-borda);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        padding: 25px;
+    }
+
+    .form-control, .form-select, .form-control:focus, .form-select:focus {
+        background-color: #f8f9fa;
+        color: var(--cor-texto);
+        border: 1px solid #ced4da;
+    }
+
+    .form-control::placeholder, .form-select::placeholder {
+        color: #adb5bd;
+    }
+
+    .form-label {
+        color: var(--cor-texto);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    h1, h2, h3, h4 {
+        color: var(--cor-texto);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .welcome-text {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .welcome-text small {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--cor-subtitulo);
+        display: block;
+        margin-top: 5px;
+    }
+
+    .btn-primary {
+        background-color: var(--cor-primaria);
+        border-color: var(--cor-primaria);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--cor-primaria-hover);
+        border-color: var(--cor-primaria-hover);
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .excluir {
+        background: none;
+        border: none;
+        color: #dc3545;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .excluir:hover {
+        color: #a71d2a;
+        transform: scale(1.1);
+    }
+
+    /* Estilos da nova visualização (não-tabela) */
+    .registros-cards .registro-card {
+        background-color: var(--cor-card-fundo);
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .registros-cards .registro-card .card-header {
+        border-bottom: 1px solid var(--cor-borda);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .registros-cards .registro-card .card-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .registros-cards .registro-card .card-body div {
+        margin-bottom: 10px;
+    }
+
+    .registros-cards .registro-card .card-body strong {
+        display: block;
+        color: var(--cor-subtitulo);
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .registros-cards .registro-card .card-body span {
+        display: block;
+        color: var(--cor-texto);
+        font-weight: 600;
+    }
+
+    /* Oculta a tabela e exibe os cartões apenas em telas pequenas */
+    .table-responsive {
+        display: block;
+    }
+
+    .registros-cards {
+        display: none;
+    }
+
+    @media (max-width: 991px) {
+        .table-responsive {
+            display: none;
+        }
+
+        .registros-cards {
+            display: block;
+        }
+    }
+
+    /* Estilos para o menu hambúrguer e responsividade */
+    .menu-toggle {
+        background: none;
+        border: none;
+        color: var(--cor-texto);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 10px;
+        display: none; /* Escondido por padrão em telas grandes */
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1002;
+    }
+
+    .menu-toggle:focus {
+        outline: none;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Esconde a sidebar para a esquerda */
+            height: 100%;
+            transition: left 0.3s ease-in-out;
+            z-index: 1001;
+        }
+
+        .sidebar-open .sidebar {
+            left: 0; /* Mostra a sidebar quando a classe 'sidebar-open' está no body */
+        }
+
+        .menu-toggle {
+            display: block; /* Mostra o botão do menu */
+        }
+
+        .content {
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-left: 0;
+            transition: transform 0.3s ease-in-out;
+            padding-top: 60px; /* Adiciona espaço no topo para o botão não sobrepor o texto */
+        }
+
+        .sidebar-open .content {
+            transform: translateX(280px); /* Empurra o conteúdo para a direita com 'transform' */
+            pointer-events: none; /* Desabilita cliques no conteúdo quando o menu está aberto */
+        }
+
+        body.sidebar-open::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+        }
+
+        .sidebar-bottom {
+            border-top: none;
+            padding-top: 0;
+            text-align: center;
+        }
+    }
+</style>
+</head>
+<body>
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link active">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <div class="nav-item dropdown mt-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cogs"></i> <span>Cadastros</span>
+                </a>
+                <ul class="dropdown-menu border-0 shadow" style="background-color: var(--cor-card-fundo);">
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_veiculos') }}">🚙 Veículos</a></li>
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_usuarios') }}">👥 Usuários</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content container">
+        <div class="main-header">
+            <h1 class="welcome-text">Pendências de OS</h1>
+        </div>
+        
+        <div class="card p-4">
+            <h3>Adicionar Nova Pendência</h3>
+            <form method="POST">
+                <input type="hidden" name="acao" value="adicionar" />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="numero_os" class="form-label">Número da OS</label>
+                        <input type="text" class="form-control" id="numero_os" name="numero_os" placeholder="Ex: 12345" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="data" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data" name="data" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cliente" class="form-label">Cliente</label>
+                        <input type="text" class="form-control" id="cliente" name="cliente" placeholder="Nome do Cliente" required />
+                    </div>
+                    <div class="col-12">
+                        <label for="pendencia" class="form-label">Descrição da Pendência</label>
+                        <textarea class="form-control" id="pendencia" name="pendencia" rows="4" placeholder="Descreva a pendência aqui..." required></textarea>
+                    </div>
+                </div>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-plus-circle"></i> Adicionar Pendência</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card p-4">
+            <h3>Filtrar Pendências</h3>
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="filtro_os" class="form-label">Número da OS</label>
+                    <input type="text" class="form-control" name="numero_os" id="filtro_os" placeholder="Número da OS" value="{{ filtro_os }}" />
+                </div>
+                <div class="col-md-3">
+                    <label for="filtro_cliente" class="form-label">Cliente</label>
+                    <input type="text" class="form-control" name="cliente" id="filtro_cliente" placeholder="Cliente" value="{{ filtro_cliente }}" />
+                </div>
+                <div class="col-md-3">
+                    <label for="filtro_data" class="form-label">Data</label>
+                    <input type="date" class="form-control" name="data" id="filtro_data" value="{{ filtro_data }}" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter"></i> Filtrar</button>
+                    <a href="{{ url_for('pendencias') }}" class="btn btn-secondary flex-grow-1"><i class="fas fa-eraser"></i> Limpar</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="d-lg-table table-responsive card p-4">
+            <h3 class="mb-4">Histórico de Pendências</h3>
+            {% if pendencias %}
+                <table class="table table-striped text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>OS</th>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th>Pendência</th>
+                            <th>Status</th>
+                            <th>Criado por</th>
+                            <th>Concluído por</th>
+                            <th>OS Solucionada</th>
+                            <th>Observações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pendencias %}
+                            <tr>
+                                <td>{{ p[1] }}</td>
+                                <td>{{ p[2].strftime('%d/%m/%Y') }}</td>
+                                <td>{{ p[3] }}</td>
+                                <td>{{ p[4] }}</td>
+                                <td>
+                                    {% if p[5] == 'Pendente' %}
+                                        <span class="status-pendente">{{ p[5] }}</span>
+                                    {% else %}
+                                        <span class="status-resolvida">{{ p[5] }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ p[6] }}</td>
+                                <td>{{ p[7] if p[7] else '-' }}</td>
+                                <td>{{ p[8] if p[8] else '-' }}</td>
+                                <td>{{ p[9] if p[9] else '-' }}</td>
+                                <td>
+                                    {% if p[5] == 'Pendente' %}
+                                    <form method="POST" class="d-inline-block">
+                                        <input type="hidden" name="acao" value="resolver" />
+                                        <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                                        <textarea name="observacoes" class="form-control mb-1" placeholder="Observações" rows="3"></textarea>
+                                        <button type="submit" class="btn btn-success btn-sm mt-2">✔️ Resolver</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if tipo == 'admin' or p[6] == usuario %}
+                                    <form method="POST" class="d-inline-block" onsubmit="return confirm('Quer mesmo excluir?');">
+                                        <input type="hidden" name="acao" value="excluir" />
+                                        <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                                        <button type="submit" class="btn btn-danger btn-sm mt-2">🗑️ Excluir</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">Nenhuma pendência encontrada.</div>
+            {% endif %}
+        </div>
+        
+        <div class="d-lg-none">
+    <h3 class="mb-4">Histórico de Pendências</h3>
+    {% if pendencias %}
+        {% for p in pendencias %}
+            <div class="pendencia-card">
+                <div class="card-header">
+                    <h5>OS: {{ p[1] }}</h5>
+                    {% if p[5] == 'Pendente' %}
+                        <span class="status-pendente">{{ p[5] }}</span>
+                    {% else %}
+                        <span class="status-resolvida">{{ p[5] }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Data:</strong>
+                            <span>{{ p[2].strftime('%d/%m/%Y') }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Cliente:</strong>
+                            <span>{{ p[3] }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Descrição da Pendência:</strong>
+                        <span>{{ p[4] }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Criado por:</strong>
+                        <span>{{ p[6] }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Concluído por:</strong>
+                        <span>{{ p[7] if p[7] else '-' }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <strong>OS Solucionada:</strong>
+                        <span>{{ p[8] if p[8] else '-' }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Observações:</strong>
+                        <span>{{ p[9] if p[9] else '-' }}</span>
+                    </div>
+                    <div class="action-button-group">
+                        {% if p[5] == 'Pendente' %}
+                        <form method="POST">
+                            <input type="hidden" name="acao" value="resolver" />
+                            <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                            <textarea name="observacoes" class="form-control mb-2" placeholder="Observações" rows="3"></textarea>
+                            <button type="submit" class="btn btn-success btn-sm w-100">✔️ Resolver</button>
+                        </form>
+                        {% endif %}
+                        {% if tipo == 'admin' or p[6] == usuario %}
+                        <form method="POST" onsubmit="return confirm('Quer mesmo excluir?');">
+                            <input type="hidden" name="acao" value="excluir" />
+                            <input type="hidden" name="id_pendencia" value="{{ p[0] }}" />
+                            <button type="submit" class="btn btn-danger btn-sm w-100">🗑️ Excluir</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr style="border-top: 1px solid var(--cor-borda); margin-top: 20px; margin-bottom: 20px;">
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">Nenhuma pendência encontrada.</div>
+    {% endif %}
+</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Bootstrap 5 form validation
+        (() => {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Adiciona funcionalidade para permitir vírgula ou ponto no input de valor
+        document.addEventListener('DOMContentLoaded', function() {
+            const valorInput = document.getElementById('valor');
+            if (valorInput) {
+                valorInput.addEventListener('change', function() {
+                    this.value = this.value.replace(',', '.');
+                });
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Bootstrap 5 form validation
+    (() => {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    // Adiciona funcionalidade para permitir vírgula ou ponto no input de valor
+    document.addEventListener('DOMContentLoaded', function() {
+        const valorInput = document.getElementById('valor');
+        if (valorInput) {
+            valorInput.addEventListener('change', function() {
+                this.value = this.value.replace(',', '.');
+            });
+        }
+    });
+
+    // JavaScript para o menu hambúrguer
+    const menuToggle = document.querySelector('.menu-toggle');
+    const body = document.body;
+
+    menuToggle.addEventListener('click', function() {
+        body.classList.toggle('sidebar-open');
+    });
+
+    // Opcional: Adiciona um ouvinte de clique no overlay (se o overlay estiver ativo) para fechar o menu
+    body.addEventListener('click', function(event) {
+        if (body.classList.contains('sidebar-open') && !event.target.closest('.sidebar') && !event.target.closest('.menu-toggle')) {
+            body.classList.remove('sidebar-open');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Geradores - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+        <style>
+        /* Estilos CSS idênticos ao template de veículos para manter o visual */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar - Menu Lateral */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100dvh;
+            padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-logo img {
+            max-width: 200px;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--cor-nav-texto);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .nav-link:hover {
+            background-color: var(--cor-nav-item-hover);
+            color: var(--cor-texto);
+        }
+
+        .nav-link.active {
+            background-color: rgba(230, 0, 0, 0.1);
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--cor-borda);
+        }
+
+        .sidebar-bottom .nav-link {
+            color: var(--cor-subtitulo);
+        }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        /* Estilização dos blocos de conteúdo */
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .form-control, .form-select, .form-control:focus, .form-select:focus {
+            background-color: #f8f9fa;
+            color: var(--cor-texto);
+            border: 1px solid #ced4da;
+        }
+
+        .form-control::placeholder, .form-select::placeholder {
+            color: #adb5bd;
+        }
+
+        .form-label {
+            color: var(--cor-texto);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cor-texto);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .welcome-text small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--cor-subtitulo);
+            display: block;
+            margin-top: 5px;
+        }
+        /* NOVO: Estilo para o Botão de Excluir */
+        .actions-form {
+            margin: 0;
+            display: inline-block; /* Para manter o botão na mesma linha se houver outras ações futuras */
+        }
+
+        .actions-form button.excluir {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            font-size: 1.1em;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .actions-form button.excluir:hover {
+            opacity: 1;
+            /* Você pode adicionar uma cor vermelha se quiser: color: var(--cor-primaria); */
+        }
+
+        /* Estilos de Tabela para Responsividade */
+        .table th, .table td {
+            border-right: 1px solid #dee2e6;
+        }
+
+        .table th:last-child, .table td:last-child {
+            border-right: none;
+        }
+        
+        /* Estilos para o menu hambúrguer e responsividade */
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--cor-texto);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            display: none; 
+        }
+
+        .menu-toggle:focus {
+            outline: none;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            width: 100%; 
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px; 
+                height: 100%;
+                transition: left 0.3s ease-in-out;
+            }
+
+            .sidebar-open .sidebar {
+                left: 0; 
+            }
+
+            .menu-toggle {
+                display: block; 
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001; 
+            }
+
+            .content {
+                padding-left: 20px;
+                padding-right: 20px;
+                margin-left: 0;
+                transition: margin-left 0.3s ease-in-out;
+                padding-top: 60px; 
+            }
+
+            .sidebar-open .content {
+                margin-left: 280px; 
+            }
+
+            .sidebar-logo {
+                text-align: center;
+            }
+
+            .sidebar-bottom {
+                border-top: none;
+                padding-top: 0;
+                text-align: center;
+            }
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        /* Estilos de Status para Tabela */
+        .status-vencido {
+            color: #cc0000;
+            font-weight: 600;
+        }
+        .status-proximo {
+            color: orange;
+            font-weight: 500;
+        }
+        
+        /* NOVO: Estilos para Alertas do Resumo - ESTE É O BLOCO CORRIGIDO */
+        .list-group-item.list-group-item-danger {
+            background-color: #f8d7da !important; /* Cor de fundo suave para VENCIDO */
+        }
+        .list-group-item.list-group-item-warning {
+            background-color: #fff3cd !important; /* Cor de fundo suave para PRÓXIMO */
+        }
+    </style>
+</head>
+
+<body>
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link active">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <div class="nav-item dropdown mt-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cogs"></i> <span>Cadastros</span>
+                </a>
+                <ul class="dropdown-menu border-0 shadow" style="background-color: var(--cor-card-fundo);">
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_veiculos') }}">🚙 Veículos</a></li>
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_usuarios') }}">👥 Usuários</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+
+        </nav>
+
+        <div class="sidebar-bottom sidebar-nav">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content container">
+    <div class="main-header">
+        <h1 class="welcome-text">Controle de Manutenção de Geradores</h1>
+    </div>
+    
+    
+    <div class="card p-4">
+        <h3 class="mb-4">Registro de Manutenção</h3>
+        <form method="POST" id="registroForm" class="form-bloqueio">
+            <input type="hidden" name="acao" value="salvar_registro">
+
+            <div class="row g-3">
+                
+                <div class="col-md-4">
+                    <label for="gerador" class="form-label">Gerador / Cliente:</label>
+                    <input list="lista-geradores" class="form-control" id="gerador" name="gerador" required>
+                    <datalist id="lista-geradores">
+                        {% for g in lista_geradores %}
+                        <option value="{{ g }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-4">
+                    <label for="data_manutencao" class="form-label">Data da Manutenção:</label>
+                    <input type="date" class="form-control" id="data_manutencao" name="data_manutencao" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="horimetro_atual" class="form-label">Horímetro na Troca (h):</label>
+                    <input type="number" class="form-control" id="horimetro_atual" name="horimetro_atual" required>
+                </div>
+
+            <div class="col-md-12 mt-3">
+                <label for="regime_operacao" class="form-label">Regime de Operação (Troca de Óleo):</label>
+                <select class="form-select" id="regime_operacao" name="regime_operacao" required>
+                    <option value="emergencia" selected>Emergência (Próxima Troca: 1 Ano)</option>
+                    <option value="horario_ponta">Horário de Ponta (Próxima Troca: 3 Meses)</option>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <h4 class="mt-3 mb-3">Serviços Executados</h4>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="True" id="troca_filtro_ar" name="troca_filtro_ar">
+                    <label class="form-check-label" for="troca_filtro_ar">Troca Filtro de Ar (2 Anos)</label>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="True" id="troca_liq_arref" name="troca_liq_arref">
+                    <label class="form-check-label" for="troca_liq_arref">Troca Líq. Arrefecimento (2 Anos)</label>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="True" id="troca_correia" name="troca_correia">
+                    <label class="form-check-label" for="troca_correia">Troca Correia (2 Anos)</label>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="True" id="troca_baterias" name="troca_baterias">
+                    <label class="form-check-label" for="troca_baterias">Troca Baterias (2 Anos)</label>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="True" id="troca_regulagem_valvulas" name="troca_regulagem_valvulas">
+                    <label class="form-check-label" for="troca_regulagem_valvulas">Regulagem de Válvulas (2 Anos)</label>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="filtro_diesel_periodo" class="form-label">Troca Filtros Diesel:</label>
+                <select class="form-select" id="filtro_diesel_periodo" name="filtro_diesel_periodo">
+                    <option value="">Não Trocado</option>
+                    <option value="6meses">Troca (Próxima: 6 Meses)</option>
+                    <option value="1ano">Troca (Próxima: 1 Ano)</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label for="status" class="form-label">Status do Registro:</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="Finalizado" selected>Finalizado</option>
+                    <option value="Em Andamento">Em Andamento</option>
+                    <option value="Revisão Pendente">Revisão Pendente</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label for="pecas_trocadas" class="form-label">Peças e Materiais Trocados (Descreva):</label>
+                <textarea class="form-control" id="pecas_trocadas" name="pecas_trocadas" rows="2"></textarea>
+            </div>
+
+            <div class="col-12">
+                <label for="observacoes" class="form-label">Observações Adicionais:</label>
+                <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+            </div>
+
+            <div class="col-12 text-center mt-4">
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">Salvar Registro</button>
+            </div>
+        </div>
+    </form>
+</div>
+        
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-12">
+                <h2 style="color: var(--cor-texto); border-bottom: 2px solid var(--cor-borda); padding-bottom: 10px; font-weight: 600;">
+                    🔔 Resumo dos Alertas de Manutenção
+                </h2>
+                <div class="card shadow-sm border-0" style="border-radius: 8px;">
+                    <div class="card-body p-4">
+                        {% if alerts %}
+                            <ul class="list-group list-group-flush">
+                                {% for alert in alerts %}
+                                    {% set is_vencido = alert.status == 'VENCIDO' %}
+                                    {% set alert_class = 'list-group-item-danger' if is_vencido else 'list-group-item-warning' %}
+                                    
+                                    <li class="list-group-item d-flex justify-content-between align-items-center list-alert-base {{ alert_class }}" 
+                                        style="margin-bottom: 5px; border-radius: 4px; font-weight: 500;">
+                                        <div>
+                                            <strong class="text-dark">{{ alert.tag }}</strong> - <span class="text-secondary">{{ alert.item }}</span>
+                                        </div>
+                                        <span class="badge bg-{{ 'danger' if is_vencido else 'warning' }} text-dark rounded-pill" style="padding: 8px 12px; font-size: 0.9em; min-width: 150px;">
+                                            {% if is_vencido %}
+                                                **VENCIDO** em {{ alert.vencimento }}
+                                            {% else %}
+                                                {{ alert.status }}
+                                            {% endif %}
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-success m-0" style="font-size: 1.1em;">
+                                ✅ Nenhuma manutenção próxima de vencer ou vencida (limite de 45 dias).
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4">
+            <h3 class="mb-4">Filtrar Histórico</h3>
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4 col-sm-6">
+                    <label for="gerador_filtro" class="form-label">Filtrar por Gerador/Cliente:</label>
+                    <input type="text" class="form-control" id="gerador_filtro" name="gerador_filtro" value="{{ filtro_gerador or '' }}" placeholder="TAG do Gerador">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="data_filtro" class="form-label">Filtrar por Data:</label>
+                    <input type="date" class="form-control" id="data_filtro" name="data_filtro" value="{{ filtro_data or '' }}">
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <label for="status_filtro" class="form-label">Filtrar por Status:</label>
+                    <select name="status_filtro" id="status_filtro" class="form-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Finalizado" {% if filtro_status == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                        <option value="Em Andamento" {% if filtro_status == 'Em Andamento' %}selected{% endif %}>Em Andamento</option>
+                        <option value="Revisão Pendente" {% if filtro_status == 'Revisão Pendente' %}selected{% endif %}>Revisão Pendente</option>
+                        <option value="Outro" {% if filtro_status == 'Outro' %}selected{% endif %}>Outro</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    <a href="{{ url_for('controle_geradores') }}" class="btn btn-secondary"><i class="fas fa-eraser"></i> Limpar Filtros</a>
+                </div>
+            </form>
+        </div>
+
+        <h3 class="mb-4">Histórico de Manutenções</h3>
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Gerador/Cliente</th>
+                            <th>Data Manutenção</th>
+                            <th>Horímetro Atual (h)</th>
+                            <th>Próx. Óleo (Data)</th>
+                            <th>Próx. Óleo (Horímetro)</th>
+                            <th>Próx. Filtro Diesel</th>
+                            <th>Próx. Filtro Ar (2 Anos)</th>
+                            <th>Próx. Líq Arref. (2 Anos)</th>
+                            <th>Próx. Correia (2 Anos)</th>
+                            <th>Próx. Baterias (2 Anos)</th>
+                            <th>Próx. Reg. Válvulas (2 Anos)</th>
+                            <th>Status</th>
+                            <th>Peças Trocadas</th>
+                            <th>Observações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r[1] }}</td>
+                            
+                            <td>{{ r[2].strftime('%d/%m/%Y') if r[2] else '-' }}</td>
+                            
+                            <td>{{ r[3] }}</td>
+                            
+                            <td>
+                                {% set data_oleo = r[10] %}
+                                {% set is_date_oleo = data_oleo is not none and data_oleo is not string and data_oleo is not boolean and data_oleo is not number %}
+                                <span class="
+                                    {% if is_date_oleo and data_oleo <= today %}status-vencido
+                                    {% elif is_date_oleo and (data_oleo - today).days <= 45 %}status-proximo {% endif %}
+                                ">
+                                    {{ data_oleo.strftime('%d/%m/%Y') if is_date_oleo else '-' }}
+                                </span>
+                            </td>
+                            
+                            <td>{{ r[11] if r[11] is not none else '-' }}</td>
+                            
+                            <td>
+                                {% set data_diesel = r[18] %}
+                                {% set is_date_diesel = data_diesel is not none and data_diesel is not string and data_diesel is not boolean and data_diesel is not number %}
+                                <span class="
+                                    {% if is_date_diesel and data_diesel <= today %}status-vencido
+                                    {% elif is_date_diesel and (data_diesel - today).days <= 45 %}status-proximo {% endif %}
+                                ">
+                                    {{ data_diesel.strftime('%d/%m/%Y') if is_date_diesel else '-' }}
+                                </span>
+                            </td>
+                            
+                            <td>
+                                {% set data_filtro_ar = r[12] %}
+                                {% set is_date_filtro_ar = data_filtro_ar is not none and data_filtro_ar is not string and data_filtro_ar is not number and data_filtro_ar is not boolean %}
+                                
+                                {{ data_filtro_ar.strftime('%d/%m/%Y') if is_date_filtro_ar else '-' }}
+                            </td>
+                            
+                            <td>
+                                {% set data_liq_arref = r[13] %}
+                                {% set is_date_liq_arref = data_liq_arref is not none and data_liq_arref is not string and data_liq_arref is not number and data_liq_arref is not boolean %}
+                                
+                                {{ data_liq_arref.strftime('%d/%m/%Y') if is_date_liq_arref else '-' }}
+                            </td>
+
+                            <td>
+                                {% set data_correia = r[14] %}
+                                {% set is_date_correia = data_correia is not none and data_correia is not string and data_correia is not number and data_correia is not boolean %}
+                                
+                                {{ data_correia.strftime('%d/%m/%Y') if is_date_correia else '-' }}
+                            </td>
+                            
+                            <td>
+                                {% set data_baterias = r[15] %}
+                                {% set is_date_baterias = data_baterias is not none and data_baterias is not string and data_baterias is not number and data_baterias is not boolean %}
+                                
+                                {{ data_baterias.strftime('%d/%m/%Y') if is_date_baterias else '-' }}
+                            </td>
+                            
+                            <td>
+                                {% set data_regulagem_valvulas = r[21] %} 
+                                {% set is_date_regulagem = data_regulagem_valvulas is not none and data_regulagem_valvulas is not string and data_regulagem_valvulas is not number and data_regulagem_valvulas is not boolean %}
+                                
+                                {{ data_regulagem_valvulas.strftime('%d/%m/%Y') if is_date_regulagem else '-' }}
+                            </td>
+                            
+                            <td>
+                                <strong>{{ r[5] or '-' }}</strong>
+                            </td>
+                            
+                            <td>{{ r[4] or '-' }}</td>
+                            
+                            <td class="observacoes-cell">{{ r[16] or '-' }}</td>
+                            
+                            <td>
+                                
+                                <form method="POST" class="actions-form form-bloqueio" onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
+                                    <input type="hidden" name="acao" value="excluir_registro" />
+                                    <input type="hidden" name="id_registro" value="{{ r[0] }}" />
+                                    <button type="submit" class="excluir">🗑️</button> </form>
+                                </form>
+                                
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="15">Nenhum registro de manutenção de gerador encontrado para os filtros aplicados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        
+
+        </div>
+
+        
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+    <script src="/offline-sync.js" defer></script>
+
+    <script>
+        // 1. Prevenção de Duplo Clique (Mantido)
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registroForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (form && submitBtn) {
+                form.addEventListener('submit', function() {
+                    // Desabilita o botão e muda o texto para dar feedback visual
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Aguarde... Salvando...'; 
+                });
+            }
+        });
+        
+        // 2. Toggle do Menu (sidebar) (Mantido)
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-open');
+            });
+        }
+    </script>
+
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h3 class="text-light mt-3">Processando... Aguarde!</h3>
+    <p class="text-white-50 small">Não feche a página.</p>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Pega todos os formulários que têm a classe 'form-bloqueio'
+        const forms = document.querySelectorAll('.form-bloqueio');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                // Se o formulário for inválido (campos obrigatórios vazios), NÃO bloqueia
+                if (!this.checkValidity()) {
+                    return;
+                }
+
+                // Se estiver tudo ok, mostra a tela de bloqueio
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'flex';
+                
+                // (Opcional) Desabilita o botão de enviar para garantir
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = 'Enviando...';
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

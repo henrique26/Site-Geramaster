@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script src="/register-sw.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Geramaster{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <link rel="icon" href="/static/icons/icon-192.png" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        /* --- SEU CSS ORIGINAL (Mantido Intacto) --- */
+        :root {
+            --cor-fundo: #F0F2F5;
+            --cor-primaria: #e60000;
+            --cor-primaria-hover: #cc0000;
+            --cor-texto: #212529;
+            --cor-subtitulo: #6c757d;
+            --cor-borda: #dee2e6;
+            --cor-nav-bg: #f8f9fa;
+            --cor-nav-texto: #6c757d;
+            --cor-nav-item-hover: #f1f3f5;
+            --cor-card-fundo: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar - Menu Lateral */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: var(--cor-nav-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--cor-borda);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100dvh;
+            padding-bottom: 80px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-logo { margin-bottom: 40px; text-align: center; }
+        .sidebar-logo img { max-width: 200px; margin-bottom: 40px; }
+
+        .nav-link {
+            display: flex; align-items: center; padding: 12px 15px; margin-bottom: 5px;
+            border-radius: 8px; color: var(--cor-nav-texto); font-weight: 500;
+            text-decoration: none; transition: all 0.2s ease;
+        }
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        .nav-link:hover { background-color: var(--cor-nav-item-hover); color: var(--cor-texto); }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+
+        .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cor-borda); }
+        .sidebar-bottom .nav-link { color: var(--cor-subtitulo); }
+
+        /* Conteúdo Principal */
+        .content {
+            flex-grow: 1; padding: 40px; display: flex; flex-direction: column;
+            gap: 30px; width: 100%;
+        }
+
+        .card {
+            background-color: var(--cor-card-fundo);
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px; padding: 25px;
+        }
+
+        .alert { border-radius: 8px; margin-bottom: 15px; }
+        .form-control, .form-select { background-color: #f8f9fa; border: 1px solid #ced4da; }
+        h1, h2, h3, h4 { color: var(--cor-texto); font-weight: 600; margin-bottom: 1.5rem; }
+
+        .main-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .welcome-text { font-size: 1.75rem; font-weight: 600; margin-bottom: 0; }
+        .welcome-text small { font-size: 1rem; font-weight: 400; color: var(--cor-subtitulo); display: block; margin-top: 5px; }
+
+        .menu-toggle {
+            background: none; border: none; color: var(--cor-texto);
+            font-size: 1.5rem; cursor: pointer; padding: 10px; display: none;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; top: 0; left: -280px; height: 100%; transition: left 0.3s ease-in-out; }
+            .sidebar-open .sidebar { left: 0; }
+            .menu-toggle { display: block; position: fixed; top: 15px; left: 15px; z-index: 1001; }
+            .content { padding-left: 20px; padding-right: 20px; margin-left: 0; transition: margin-left 0.3s ease-in-out; padding-top: 60px; }
+            .sidebar-open .content { margin-left: 280px; }
+            .sidebar-logo { text-align: center; }
+            .sidebar-bottom { border-top: none; padding-top: 0; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster" />
+        </div>
+
+        <nav class="nav flex-column sidebar-nav">
+    
+            <a href="{{ url_for('menu') }}" class="nav-link">
+                <i class="fas fa-home"></i> <span>Menu Principal</span>
+            </a>
+
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link">
+                <i class="fas fa-car-side"></i> <span>Controle Veículos</span>
+            </a>
+
+            <a href="{{ url_for('os_painel') }}" class="nav-link">
+                <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link">
+                <i class="fas fa-industry"></i> <span>Clientes</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link">
+                <i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link">
+                <i class="fas fa-hand-holding-usd"></i> <span>RDV</span>
+            </a>
+
+            <a href="{{ url_for('deposito') }}" class="nav-link">
+                <i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span>
+            </a>
+
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span>
+            </a>
+
+            <a href="{{ url_for('pendencias') }}" class="nav-link">
+                <i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span>
+            </a>
+
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link">
+                <i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span>
+            </a>
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link">
+                <i class="fas fa-address-book"></i> <span>Agenda Telefônica</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('estoque') }}" class="nav-link">
+                <i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span>
+            </a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <div class="nav-item dropdown mt-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cogs"></i> <span>Cadastros</span>
+                </a>
+                <ul class="dropdown-menu border-0 shadow" style="background-color: var(--cor-card-fundo);">
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_veiculos') }}">🚙 Veículos</a></li>
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_usuarios') }}">👥 Usuários</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom sidebar-nav">
+            <a href="{{ url_for('logout') }}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content container">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Scripts do Menu Hambúrguer e PWA
+        const menuToggle = document.querySelector('.menu-toggle');
+        const body = document.body;
+        menuToggle.addEventListener('click', function() {
+            body.classList.toggle('sidebar-open');
+        });
+        
+        // (Seus scripts de service worker continuam aqui internos ou via arquivo externo)
+    </script>
+</body>
+</html>
