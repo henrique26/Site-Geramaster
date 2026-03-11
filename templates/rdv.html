@@ -1,92 +1,483 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script src="/register-sw.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDV</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>RDV - Geramaster</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#FFFFFF">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+    /* CSS Original (Mantido) */
+    :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-primaria-hover: #cc0000; --cor-texto: #212529; --cor-subtitulo: #6c757d; --cor-borda: #dee2e6; --cor-nav-bg: #f8f9fa; --cor-nav-texto: #6c757d; --cor-nav-item-hover: #f1f3f5; --cor-card-fundo: #f8f9fa; }
+    body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+    .sidebar { width: 280px; min-width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid var(--cor-borda); position: sticky; top: 0; height: 100vh; height: 100dvh; padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */ overflow-y: auto; z-index: 1000; transition: left 0.3s ease-in-out, transform 0.3s ease-in-out; }
+    .sidebar-logo img { max-width: 200px; margin-bottom: 40px; }
+    .nav-link { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--cor-nav-texto); font-weight: 500; text-decoration: none; transition: all 0.2s ease; }
+    .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+    .nav-link:hover { background-color: var(--cor-nav-item-hover); color: var(--cor-texto); }
+    .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cor-borda); }
+    .sidebar-bottom .nav-link { color: var(--cor-subtitulo); }
+    .content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; gap: 30px; width: 100%; transition: transform 0.3s ease-in-out; }
+    .card { background-color: var(--cor-card-fundo); border: 1px solid var(--cor-borda); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border-radius: 8px; padding: 25px; }
+    .form-control, .form-select, .form-control:focus, .form-select:focus { background-color: #f8f9fa; color: var(--cor-texto); border: 1px solid #ced4da; }
+    .form-control::placeholder, .form-select::placeholder { color: #adb5bd; }
+    .form-label { color: var(--cor-texto); font-weight: 500; margin-bottom: 0.5rem; }
+    h1, h2, h3, h4 { color: var(--cor-texto); font-weight: 600; margin-bottom: 1.5rem; }
+    .main-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .welcome-text { font-size: 1.75rem; font-weight: 600; margin-bottom: 0; }
+    .welcome-text small { font-size: 1rem; font-weight: 400; color: var(--cor-subtitulo); display: block; margin-top: 5px; }
+    .btn-primary { background-color: var(--cor-primaria); border-color: var(--cor-primaria); }
+    .btn-primary:hover { background-color: var(--cor-primaria-hover); border-color: var(--cor-primaria-hover); }
+    .btn-success { background-color: #28a745; border-color: #28a745; }
+    .btn-success:hover { background-color: #218838; border-color: #218838; }
+    .btn-danger { background-color: #dc3545; border-color: #dc3545; }
+    .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
+    .excluir { background: none; border: none; color: #dc3545; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s ease-in-out; }
+    .excluir:hover { color: #a71d2a; transform: scale(1.1); }
+    
+    /* Configuração da Tabela Responsiva */
+    .table-responsive { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table { min-width: 800px; } /* Força a largura mínima para ativar scroll no mobile */
+
+    .menu-toggle { background: none; border: none; color: var(--cor-texto); font-size: 1.5rem; cursor: pointer; padding: 10px; display: none; position: fixed; top: 15px; left: 15px; z-index: 1002; }
+    .menu-toggle:focus { outline: none; }
+    @media (max-width: 768px) {
+        .sidebar { position: fixed; top: 0; left: -280px; height: 100%; transition: left 0.3s ease-in-out; z-index: 1001; }
+        .sidebar-open .sidebar { left: 0; }
+        .menu-toggle { display: block; }
+        .content { padding-left: 20px; padding-right: 20px; margin-left: 0; transition: transform 0.3s ease-in-out; padding-top: 60px; }
+        .sidebar-open .content { transform: translateX(280px); pointer-events: none; }
+        body.sidebar-open::after { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; transition: opacity 0.3s ease-in-out; }
+        .sidebar-logo { text-align: center; }
+        .sidebar-bottom { border-top: none; padding-top: 0; text-align: center; }
+    }
+    </style>
 </head>
+
 <body>
-    <h2 class="text-center mb-4">Geramaster App</h2>
-    <div class="container">
-        <h1 class="my-4">RDV - Registro de Valores</h1>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger mb-4">Sair</a><br>
-        <a href="{{ url_for('menu') }}" class="btn-voltar">Voltar para Menu</a>
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
 
-        <!-- Formulário RDV -->
-        <form method="POST" class="mb-3">
-            <div class="mb-3">
-                <label for="valor" class="form-label">Valor</label>
-                <input type="text" name="valor" id="valor" class="form-control" required>
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster"></div>
+        <nav class="nav flex-column sidebar-nav">
+            <a href="{{ url_for('menu') }}" class="nav-link"><i class="fas fa-home"></i> <span>Menu Principal</span></a>
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link"><i class="fas fa-car-side"></i> <span>Controle Veículos</span></a>
+            <a href="{{ url_for('os_painel') }}" class="nav-link"><i class="fas fa-tools"></i> <span>Ordens de Serviço</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link"><i class="fas fa-industry"></i> <span>Clientes</span></a>
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link"><i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span></a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link active"><i class="fas fa-hand-holding-usd"></i> <span>RDV</span></a>
+            <a href="{{ url_for('deposito') }}" class="nav-link"><i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span></a>
+            <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span></a>
+            <a href="{{ url_for('pendencias') }}" class="nav-link"><i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span></a>
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link"><i class="fas fa-address-book"></i> <span>Agenda Telefônica</span></a>
+            <a href="{{ url_for('estoque') }}" class="nav-link"><i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span></a>
+            {% endif %}
+
+            {% if session.get('tipo') == 'admin' %}
+            <div class="nav-item dropdown mt-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-cogs"></i> <span>Cadastros</span>
+                </a>
+                <ul class="dropdown-menu border-0 shadow" style="background-color: var(--cor-card-fundo);">
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_veiculos') }}">🚙 Veículos</a></li>
+                    <li><a class="dropdown-item py-2" href="{{ url_for('admin_usuarios') }}">👥 Usuários</a></li>
+                </ul>
             </div>
-            <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
-                <input type="text" name="descricao" id="descricao" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label for="data" class="form-label">Data</label>
-                <input type="date" name="data" id="data" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Registrar RDV</button>
-        </form>
-            {% if tipo == 'admin' %}
-    <form method="get" style="margin-bottom: 20px;">
-        <label for="filtro_data">Data:</label>
-        <input type="date" name="filtro_data" id="filtro_data" value="{{ filtro_data }}">
+            {% endif %}
 
-        <label for="filtro_usuario">Técnico:</label>
-        <select name="filtro_usuario" id="filtro_usuario">
-            <option value="">Todos</option>
-            {% for tecnico in tecnicos %}
-                <option value="{{ tecnico }}" {% if tecnico == filtro_usuario %}selected{% endif %}>{{ tecnico }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Filtrar</button>
-    </form>
-{% endif %}
-
-
-        <h3>Histórico de RDVs</h3>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    {% if is_admin %}
-                    <th>Nome do Técnico</th>
-                    {% endif %}
-                    <th>Valor</th>
-                    <th>Descrição</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for rdv in rdvs %}
-                <tr>
-                    {% if is_admin %}
-                    <td>{{ rdv[1] }}</td>
-                    {% endif %}
-                    <td>{{ rdv[2] }}</td>
-                    <td>{{ rdv[3] }}</td>
-                    <td>{{ rdv[4] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        </nav>
+        <div class="sidebar-bottom"><a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a></div>
     </div>
+
+    <div class="content container">
+        <div class="main-header mb-4"><h1 class="welcome-text">RDV - Relatório de Despesas de Viagem</h1></div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show">
+                {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card p-4 mb-4">
+            <h3 class="mb-4">Registrar Novo RDV</h3>
+            <form method="POST" action="/rdv" id="registroForm" class="form-bloqueio needs-validation" novalidate>
+                <div class="row g-3">
+                    {% if is_admin %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Técnico (Lançar em nome de):</label>
+                            <select name="tecnico_alvo" class="form-select" required>
+                                {% for tec in tecnicos %}
+                                    <option value="{{ tec }}">{{ tec }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+
+                    <div class="col-md-4">
+                        <label class="form-label">Valor (R$)</label>
+                        <input type="text" name="valor" id="valor" class="form-control" placeholder="Ex: 50,00" required pattern="[0-9]+([,\.][0-9]{1,2})?">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" name="descricao" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Data</label>
+                        <input type="date" name="data" class="form-control" required>
+                    </div>
+
+                    
+                </div>
+                <button type="submit" id="submitBtn" class="btn btn-primary w-100 mt-3"><i class="fas fa-save"></i> Registrar RDV</button>
+            </form>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card h-100 p-4">
+                    <h3>Saldos Atuais</h3>
+                    {% if is_admin and saldos %}
+                        <ul class="list-group list-group-flush">
+                            {% for tecnico, val in saldos.items() %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                                    {{ tecnico }}
+                                    <span class="fw-bold {% if val < 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ '%.2f'|format(val)|replace('.', ',') }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">Seu Saldo</p>
+                            <h2 class="fw-bold {% if saldo < 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ '%.2f'|format(saldo)|replace('.', ',') }}</h2>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card p-4 h-100">
+                    <h3>Filtrar Histórico</h3>
+                    <form method="get" class="row g-2 form-bloqueio">
+                        <div class="col-6">
+                            <label class="form-label small">Início</label>
+                            <input type="date" name="filtro_data_inicio" class="form-control form-control-sm" value="{{ filtro_data_inicio }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Fim</label>
+                            <input type="date" name="filtro_data_fim" class="form-control form-control-sm" value="{{ filtro_data_fim }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small">Técnico</label>
+                            <select name="filtro_usuario" class="form-select form-select-sm" class="form-bloqueio">
+                                <option value="">Todos os Técnicos</option>
+                                {% for t in tecnicos %}
+                                    <option value="{{ t }}" {% if t == filtro_usuario %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-2 mt-2" class="form-bloqueio">
+                            <button type="submit" class="btn btn-primary btn-sm flex-fill" class="form-bloqueio">Filtrar</button>
+                            <a href="{{ url_for('rdv') }}" class="btn btn-secondary btn-sm form-bloqueio">Limpar</a>
+                            <a href="{{ url_for('exportar_rdv_pdf', filtro_data_inicio=filtro_data_inicio, filtro_data_fim=filtro_data_fim, filtro_usuario=filtro_usuario) }}" class="btn btn-success btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card p-4 border-0 shadow-sm mt-4">
+            <h3 class="mb-4 text-secondary">Extrato de Lançamentos</h3>
+            
+            {% if historico %}
+                <div class="table-responsive">
+                    <table class="table table-hover text-center align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                {% if is_admin %}<th>Técnico</th>{% endif %}
+                                <th class="text-start ps-4">Descrição</th>
+                                <th>Data</th>
+                                <th class="text-danger">Saída (RDV)</th>
+                                <th class="text-success">Entrada (Depósito)</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historico %}
+                            <tr>
+                                {% if is_admin %}<td>{{ item.nome }}</td>{% endif %}
+                                <td class="text-start ps-4">
+                                    {% if item.tipo == 'entrada' %}
+                                        <i class="fas fa-arrow-down text-success me-2"></i> 
+                                    {% else %}
+                                        <i class="fas fa-arrow-up text-danger me-2"></i>
+                                    {% endif %}
+                                    {{ item.descricao }}
+                                </td>
+                                <td>{{ item.data_str }}</td>
+                                <td>
+                                    {% if item.tipo == 'saida' %}
+                                        <span class="fw-bold text-danger">- R$ {{ "%.2f"|format(item.valor)|replace('.', ',') }}</span>
+                                    {% else %}<span class="text-muted small">-</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% if item.tipo == 'entrada' %}
+                                        <span class="fw-bold text-success">+ R$ {{ "%.2f"|format(item.valor)|replace('.', ',') }}</span>
+                                    {% else %}<span class="text-muted small">-</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% if item.tipo == 'saida' %}
+                                        {% if is_admin or (tipo == 'tecnico' and usuario == item.usuario) %}
+                                            <form method="POST" action="{{ url_for('delete_rdv', rdv_id=item.id) }}" class="form-bloqueio" onsubmit="return confirm('Excluir este gasto?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm border-0"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted small"><i class="fas fa-lock"></i></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-light text-center border mb-0 py-4">
+                    <i class="fas fa-search fa-2x text-muted mb-3 d-block"></i>
+                    Nenhum registro encontrado para o período selecionado.
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const body = document.body;
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                body.classList.toggle('sidebar-open');
+            });
+        }
+        
+        body.addEventListener('click', (e) => {
+            if (body.classList.contains('sidebar-open') && !e.target.closest('.sidebar') && !e.target.closest('.menu-toggle')) {
+                sidebar.classList.remove('open');
+                body.classList.remove('sidebar-open');
+            }
+        });
+
+        // Validação e Submit
+        (() => {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        const btn = form.querySelector('button[type="submit"]');
+                        if(btn) {
+                            btn.disabled = true;
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+                        }
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Máscara Valor
+        const valorInput = document.getElementById('valor');
+        if (valorInput) {
+            valorInput.addEventListener('input', function() {
+                this.value = this.value.replace(',', '.');
+            });
+        }
+    </script>
+
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h3 class="text-light mt-3">Processando... Aguarde!</h3>
+    <p class="text-white-50 small">Não feche a página.</p>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Pega todos os formulários que têm a classe 'form-bloqueio'
+        const forms = document.querySelectorAll('.form-bloqueio');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                // Se o formulário for inválido (campos obrigatórios vazios), NÃO bloqueia
+                if (!this.checkValidity()) {
+                    return;
+                }
+
+                // Se estiver tudo ok, mostra a tela de bloqueio
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'flex';
+                
+                // (Opcional) Desabilita o botão de enviar para garantir
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = 'Enviando...';
+                }
+            });
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'erro_modal' %}
+                    // Dispara o popup no centro da tela
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ação Negada!',
+                        text: '{{ message }}',
+                        confirmButtonText: 'Entendi',
+                        confirmButtonColor: '#d33'
+                    });
+                    
+                    // Esconde a barrinha padrão lá de cima (para não aparecer duplicado)
+                    document.addEventListener('DOMContentLoaded', function() {
+                        let barrasPadrao = document.querySelectorAll('.alert-erro_modal');
+                        barrasPadrao.forEach(barra => barra.style.display = 'none');
+                    });
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</script>
+
+<script src="/static/offline_manager.js?v=2"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 👇 AGORA SIM! Apontando para o ID correto do seu HTML 👇
+        const formRegistro = document.getElementById('registroForm'); 
+
+        if (!formRegistro) {
+            console.error('🚨 ERRO: O JavaScript não achou o formulário registroForm!');
+            return;
+        }
+
+        formRegistro.addEventListener('submit', async function(event) {
+            
+            if (!navigator.onLine) {
+                event.preventDefault(); // Bloqueia o dinossauro!
+                
+                const formData = new FormData(formRegistro);
+                const dadosObj = Object.fromEntries(formData.entries());
+                
+                // 👇 Plano B para a URL, evitando o Erro 404 👇
+                const urlDestino = formRegistro.getAttribute('action') || window.location.href;
+                
+                try {
+                    await salvarNoCofre(urlDestino, dadosObj);
+                    alert('Você está offline! 📵 O registro foi salvo no celular e será enviado automaticamente quando a internet voltar.');
+                    window.location.href = '/rdv'; // Ou para onde você quer redirecionar
+                } catch (erro) {
+                    alert('Erro ao salvar offline: ' + erro);
+                }
+            }
+        });
+    });
+</script>
+<div id="cortinaCarregamento" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; backdrop-filter: blur(3px);">
+    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem; border-width: 0.4rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h5 class="mt-4 fw-bold text-primary" style="letter-spacing: 1px;">CARREGANDO...</h5>
+    <p class="text-muted small">Aguarde um momento</p>
+</div>
+
+<script>
+    // 1. Esconde a cortina quando a página terminar de carregar TUDO (fotos, scripts, etc)
+    window.addEventListener('load', function() {
+        const cortina = document.getElementById('cortinaCarregamento');
+        if (cortina) {
+            cortina.style.opacity = '0';
+            setTimeout(() => { cortina.style.display = 'none'; }, 300); // Espera a animação de sumir
+        }
+    });
+
+    // 2. Mostra a cortina quando o técnico clicar em algum link para trocar de página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Ignora cliques que não carregam páginas novas (como #, links vazios, ou abrir em nova aba)
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || this.target === '_blank') {
+                    return;
+                }
+                
+                // Se a internet estiver desligada e for o botão de iniciar offline, não mostra a cortina infinita
+                if (!navigator.onLine && this.id === 'btnIniciarOS') {
+                    return; 
+                }
+
+                const cortina = document.getElementById('cortinaCarregamento');
+                if (cortina) {
+                    cortina.style.display = 'flex';
+                    // Pequeno delay para a tela não piscar em cliques muito rápidos
+                    setTimeout(() => { cortina.style.opacity = '1'; }, 10); 
+                }
+            });
+        });
+
+        // 3. Mostra a cortina quando enviar um formulário online
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Se estiver offline, o nosso cofre já cuida dos alertas e envios silenciosos
+                if (navigator.onLine && !e.defaultPrevented) {
+                    const cortina = document.getElementById('cortinaCarregamento');
+                    if (cortina) {
+                        cortina.style.display = 'flex';
+                        setTimeout(() => { cortina.style.opacity = '1'; }, 10);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
 </html>
-
-<style>
-.btn-voltar {
-    display: inline-block;
-    margin: 10px 0;
-    padding: 8px 15px;
-    background-color: #007BFF;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-}
-.btn-voltar:hover {
-    background-color: #0056b3;
-}
-</style>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório OS #{{ os.id_os }}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-texto: #212529; --cor-card: #fff; --cor-nav-bg: #f8f9fa; --cor-primaria: #e60000; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; height: 100dvh; padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */ overflow-y: auto; z-index: 1000; }
+        .sidebar-logo { margin-bottom: 40px; text-align: center; } .sidebar-logo img { max-width: 180px; }
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #6c757d; font-weight: 500; text-decoration: none; transition: 0.2s; }
+        .nav-link:hover { background-color: #f1f3f5; color: #212529; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid #dee2e6; }
+
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        
+        /* Estilos do Relatório */
+        .card { border: none; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; background: var(--cor-card); }
+        .card-header { background: #343a40; color: white; border-radius: 10px 10px 0 0 !important; font-weight: 600; }
+        .info-label { font-size: 0.85rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .info-value { font-size: 1.1rem; font-weight: 600; color: #212529; margin-bottom: 15px; }
+        .foto-thumb { height: 100px; width: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #dee2e6; transition: transform 0.2s; }
+        .foto-thumb:hover { transform: scale(1.05); cursor: pointer; }
+        .assinatura-box { border: 1px dashed #ccc; border-radius: 8px; padding: 10px; text-align: center; height: 150px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; }
+        .assinatura-img { max-height: 100%; max-width: 100%; }
+
+        /* Mobile */
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; transition: left 0.3s; } .sidebar.open { left: 0; } .menu-toggle { display: block; } .content { padding: 60px 20px; }
+        }
+
+        /* --- MÁGICA DE IMPRESSÃO --- */
+        @media print {
+            .sidebar, .menu-toggle, .btn-print, .btn-voltar { display: none !important; }
+            .content { padding: 0 !important; margin: 0 !important; width: 100% !important; }
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+            .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+            a { text-decoration: none; color: black; }
+        }
+    </style>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Aponta para o arquivo que criamos no Passo 1
+            navigator.serviceWorker.register('/static/service-worker.js')
+                .then((reg) => {
+                    console.log('Service Worker registrado com sucesso. Escopo:', reg.scope);
+                })
+                .catch((err) => {
+                    console.log('Falha ao registrar Service Worker:', err);
+                });
+        });
+    }
+</script>
+</head>
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo"></div>
+        <nav class="nav flex-column sidebar-nav">
+            <a href="{{ url_for('menu') }}" class="nav-link"><i class="fas fa-home"></i> <span>Menu Principal</span></a>
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link"><i class="fas fa-car-side"></i> <span>Controle Veículos</span></a>
+            <a href="{{ url_for('os_painel') }}" class="nav-link active"><i class="fas fa-tools"></i> <span>Ordens de Serviço</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link"><i class="fas fa-industry"></i> <span>Clientes</span></a>
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link"><i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span></a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link"><i class="fas fa-hand-holding-usd"></i> <span>RDV</span></a>
+            <a href="{{ url_for('deposito') }}" class="nav-link"><i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span></a>
+            <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span></a>
+            <a href="{{ url_for('pendencias') }}" class="nav-link"><i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span></a>
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link"><i class="fas fa-address-book"></i> <span>Agenda Telefônica</span></a>
+            <a href="{{ url_for('estoque') }}" class="nav-link"><i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span></a>
+            {% endif %}
+        </nav>
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="container-fluid" style="max-width: 1000px;">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                <a href="{{ url_for('os_painel') }}" class="btn btn-outline-secondary btn-voltar"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <h2 class="m-0 fw-bold">Relatório de Serviço</h2>
+                <button onclick="window.print()" class="btn btn-primary btn-print shadow"><i class="fas fa-print"></i> Imprimir / PDF</button>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6"><div class="info-label">Cliente</div><div class="info-value">{{ os.nome_cliente }}</div></div>
+                        <div class="col-md-3"><div class="info-label">Nº OS</div><div class="info-value text-primary">#{{ os.id_os }}</div></div>
+                        <div class="col-md-3"><div class="info-label">Status</div><div class="info-value"><span class="badge bg-success">CONCLUÍDA</span></div></div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-label">Técnicos</div>
+                            <div class="info-value">{{ os.nomes_tecnicos or 'Não informado' }}</div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="info-label">Início</div>
+                            <div class="info-value">{{ os.data_hora_inicio | data_brasil }}</div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="info-label">Fechamento</div>
+                            <div class="info-value">{{ os.data_hora_fechamento | data_brasil }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-2"><div class="info-label">Descrição Inicial</div><p class="text-muted">{{ os.descricao }}</p></div>
+                </div>
+            </div>
+
+            {% for equipamento, lista_itens in relatorio.items() %}
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-tools me-2"></i> {{ equipamento }}</div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr><th style="width: 30%;">Item</th><th style="width: 30%;">Resultado</th><th>Evidências</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lista_itens %}
+                                <tr>
+                                    <td class="fw-bold text-secondary">{{ item.item_nome }}</td>
+                                    <td>{{ item.resposta_texto }}</td>
+                                    <td>
+                                        {% if item.fotos and item.fotos != '[]' %}
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% for foto in item.fotos %}
+                                            <a href="{{ foto }}" target="_blank"><img src="{{ foto }}" class="foto-thumb" alt="Foto"></a>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}<span class="text-muted small">-</span>{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="row break-inside-avoid">
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">Relatório Técnico</div>
+                        <div class="card-body"><p style="white-space: pre-line;">{{ os.acoes or 'Nenhum relato.' }}</p></div>
+                    </div>
+                </div>
+                {% if os.observacoes_finais %}
+                <div class="col-12 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">Observações Finais</div>
+                        <div class="card-body"><p class="mb-0">{{ os.observacoes_finais }}</p></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row mt-4 mb-5 break-inside-avoid">
+                <div class="col-6 text-center">
+                    <div class="assinatura-box mb-2">{% if os.assinatura_tecnico %}<img src="{{ os.assinatura_tecnico }}" class="assinatura-img">{% else %}<span class="text-muted">Sem assinatura</span>{% endif %}</div>
+                    <p class="mb-0 fw-bold text-uppercase">Técnico Responsável</p>
+                    <p class="text-muted small">{{ os.nome_assinatura_tecnico or '____________________' }}</p>
+                </div>
+                <div class="col-6 text-center">
+                    <div class="assinatura-box mb-2">{% if os.assinatura_cliente %}<img src="{{ os.assinatura_cliente }}" class="assinatura-img">{% else %}<span class="text-muted">Sem assinatura</span>{% endif %}</div>
+                    <p class="mb-0 fw-bold text-uppercase">Cliente / Responsável</p>
+                    <p class="text-muted small">{{ os.nome_assinatura_cliente or '____________________' }}</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>const menuToggle = document.querySelector('.menu-toggle'); const sidebar = document.querySelector('.sidebar'); if(menuToggle) menuToggle.addEventListener('click', ()=>sidebar.classList.toggle('open'));</script>
+    <div id="cortinaCarregamento" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; backdrop-filter: blur(3px);">
+    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem; border-width: 0.4rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h5 class="mt-4 fw-bold text-primary" style="letter-spacing: 1px;">CARREGANDO...</h5>
+    <p class="text-muted small">Aguarde um momento</p>
+</div>
+
+<script>
+    // 1. Esconde a cortina quando a página terminar de carregar TUDO (fotos, scripts, etc)
+    window.addEventListener('load', function() {
+        const cortina = document.getElementById('cortinaCarregamento');
+        if (cortina) {
+            cortina.style.opacity = '0';
+            setTimeout(() => { cortina.style.display = 'none'; }, 300); // Espera a animação de sumir
+        }
+    });
+
+    // 2. Mostra a cortina quando o técnico clicar em algum link para trocar de página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Ignora cliques que não carregam páginas novas (como #, links vazios, ou abrir em nova aba)
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || this.target === '_blank') {
+                    return;
+                }
+                
+                // Se a internet estiver desligada e for o botão de iniciar offline, não mostra a cortina infinita
+                if (!navigator.onLine && this.id === 'btnIniciarOS') {
+                    return; 
+                }
+
+                const cortina = document.getElementById('cortinaCarregamento');
+                if (cortina) {
+                    cortina.style.display = 'flex';
+                    // Pequeno delay para a tela não piscar em cliques muito rápidos
+                    setTimeout(() => { cortina.style.opacity = '1'; }, 10); 
+                }
+            });
+        });
+
+        // 3. Mostra a cortina quando enviar um formulário online
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Se estiver offline, o nosso cofre já cuida dos alertas e envios silenciosos
+                if (navigator.onLine && !e.defaultPrevented) {
+                    const cortina = document.getElementById('cortinaCarregamento');
+                    if (cortina) {
+                        cortina.style.display = 'flex';
+                        setTimeout(() => { cortina.style.opacity = '1'; }, 10);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

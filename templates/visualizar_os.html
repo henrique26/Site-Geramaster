@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar OS #{{ os.id_os }}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; --cor-card-fundo: #fff; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        /* Layout Sidebar */
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #dee2e6; position: sticky; top: 0; height: 100vh; height: 100dvh; padding-bottom: 80px; /* Margem de segurança extra no fundo para garantir que o botão Sair apareça */ overflow-y: auto; z-index: 1000; }
+        .sidebar-logo { margin-bottom: 40px; text-align: center; } .sidebar-logo img { max-width: 180px; }
+        
+        .content { flex-grow: 1; padding: 40px; width: 100%; }
+        .card { background-color: var(--cor-card-fundo); border: 1px solid #dee2e6; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px; padding: 25px; }
+        
+        /* Links do Menu */
+        .nav-link { display: flex; align-items: center; padding: 12px 15px; color: #6c757d; font-weight: 500; text-decoration: none; border-radius: 8px; transition: 0.2s; }
+        .nav-link:hover { background-color: #f1f3f5; color: #212529; }
+        .nav-link.active { background-color: rgba(230, 0, 0, 0.1); color: var(--cor-primaria); font-weight: 600; }
+        .nav-link i { font-size: 1.25rem; margin-right: 15px; width: 25px; text-align: center; }
+        .sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid #dee2e6; }
+
+        /* Mobile */
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; transition: left 0.3s; }
+            .sidebar.open { left: 0; }
+            .menu-toggle { display: block; }
+            .content { padding: 60px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo"></div>
+        
+        <nav class="nav flex-column sidebar-nav">
+            <a href="{{ url_for('menu') }}" class="nav-link"><i class="fas fa-home"></i> <span>Menu Principal</span></a>
+            <a href="{{ url_for('controle_veiculos') }}" class="nav-link"><i class="fas fa-car-side"></i> <span>Controle Veículos</span></a>
+            <a href="{{ url_for('os_painel') }}" class="nav-link active"><i class="fas fa-tools"></i> <span>Ordens de Serviço</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('listar_clientes') }}" class="nav-link"><i class="fas fa-industry"></i> <span>Clientes</span></a>
+            <a href="{{ url_for('controle_geradores') }}" class="nav-link"><i class="fas fa-plug-circle-bolt"></i> <span>Controle dos Geradores</span></a>
+            {% endif %}
+
+            <a href="{{ url_for('rdv') }}" class="nav-link"><i class="fas fa-hand-holding-usd"></i> <span>RDV</span></a>
+            <a href="{{ url_for('deposito') }}" class="nav-link"><i class="fas fa-money-check-alt"></i> <span>Registrar Depósito</span></a>
+            <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Folha de Ponto</span></a>
+            <a href="{{ url_for('pendencias') }}" class="nav-link"><i class="fas fa-exclamation-triangle"></i> <span>Pendências de OS</span></a>
+            <a href="{{ url_for('listar_pedidos_bling') }}" class="nav-link"><i class="fas fa-file-invoice-dollar"></i> <span>Propostas</span></a>
+            
+            {% if session.get('tipo') == 'admin' %}
+            <a href="{{ url_for('agenda_telefonica') }}" class="nav-link"><i class="fas fa-address-book"></i> <span>Agenda Telefônica</span></a>
+            <a href="{{ url_for('estoque') }}" class="nav-link"><i class="fas fa-boxes-packing"></i> <span>Controle de Estoque</span></a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Visualizar OS #{{ os.id_os }}</h2>
+            <a href="{{ url_for('os_painel') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Voltar
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <h5 class="text-primary mb-3">Dados Gerais</h5>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="fw-bold small text-muted">CLIENTE</label>
+                    <div class="fs-5">{{ os.nome_cliente }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold small text-muted">STATUS</label>
+                    <div>
+                        <span class="badge {% if os.status == 'Concluída' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ os.status }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold small text-muted">PRIORIDADE</label>
+                    <div>{{ os.prioridade }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="fw-bold small text-muted">TÉCNICOS</label>
+                    <div>{{ tecnicos }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold small text-muted">VEÍCULO</label>
+                    <div>{{ os.veiculo_utilizado or '-' }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold small text-muted">ABERTURA</label>
+                    <div>{{ os.data_hora_abertura | data_brasil }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <h5 class="text-primary mb-3">Equipamentos</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr><th>Equipamento</th><th>Serviço Solicitado</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for eq in equipamentos %}
+                        <tr>
+                            <td class="fw-bold">{{ eq.nome_equipamento }}</td>
+                            <td>{{ eq.tipo_servico|upper|replace('_', ' ') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center text-muted">Nenhum equipamento.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h5 class="text-primary mb-3">Descrição Inicial</h5>
+            <p class="text-secondary mb-0">{{ os.descricao }}</p>
+            
+            {% if os.status == 'Concluída' %}
+            <hr>
+            <h5 class="text-success mb-3">Serviços Executados</h5>
+            <div class="bg-light p-3 rounded border">
+                <span style="white-space: pre-line;">{{ os.acoes }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if(menuToggle) menuToggle.addEventListener('click', ()=>sidebar.classList.toggle('open'));
+    </script>
+    <div id="cortinaCarregamento" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; backdrop-filter: blur(3px);">
+    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem; border-width: 0.4rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h5 class="mt-4 fw-bold text-primary" style="letter-spacing: 1px;">CARREGANDO...</h5>
+    <p class="text-muted small">Aguarde um momento</p>
+</div>
+
+<script>
+    // 1. Esconde a cortina quando a página terminar de carregar TUDO (fotos, scripts, etc)
+    window.addEventListener('load', function() {
+        const cortina = document.getElementById('cortinaCarregamento');
+        if (cortina) {
+            cortina.style.opacity = '0';
+            setTimeout(() => { cortina.style.display = 'none'; }, 300); // Espera a animação de sumir
+        }
+    });
+
+    // 2. Mostra a cortina quando o técnico clicar em algum link para trocar de página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Ignora cliques que não carregam páginas novas (como #, links vazios, ou abrir em nova aba)
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || this.target === '_blank') {
+                    return;
+                }
+                
+                // Se a internet estiver desligada e for o botão de iniciar offline, não mostra a cortina infinita
+                if (!navigator.onLine && this.id === 'btnIniciarOS') {
+                    return; 
+                }
+
+                const cortina = document.getElementById('cortinaCarregamento');
+                if (cortina) {
+                    cortina.style.display = 'flex';
+                    // Pequeno delay para a tela não piscar em cliques muito rápidos
+                    setTimeout(() => { cortina.style.opacity = '1'; }, 10); 
+                }
+            });
+        });
+
+        // 3. Mostra a cortina quando enviar um formulário online
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Se estiver offline, o nosso cofre já cuida dos alertas e envios silenciosos
+                if (navigator.onLine && !e.defaultPrevented) {
+                    const cortina = document.getElementById('cortinaCarregamento');
+                    if (cortina) {
+                        cortina.style.display = 'flex';
+                        setTimeout(() => { cortina.style.opacity = '1'; }, 10);
+                    }
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

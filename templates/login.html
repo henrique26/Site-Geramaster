@@ -1,43 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Login - Geramaster</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Geramaster</title>
+    
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#FFFFFF">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        /* --- SEU CSS ORIGINAL (Mantido Intacto) --- */
+        :root { --cor-fundo: #F8F9FA; --cor-primaria: #e60000; --cor-primaria-hover: #cc0000; --cor-texto: #212529; --cor-subtitulo: #6c757d; --cor-borda: #dee2e6; --cor-input-fundo: #FFFFFF; --cor-placeholder: #adb5bd; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px; }
+        .container-login { max-width: 450px; width: 100%; }
+        .logo-container { margin-bottom: 40px; } .logo-container img { max-width: 250px; }
+        .login-title { font-size: 2.25rem; font-weight: 600; margin-bottom: 5px; color: var(--cor-texto); }
+        .login-subtitle { font-size: 1rem; font-weight: 400; color: var(--cor-subtitulo); margin-bottom: 30px; }
+        .form-control { border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; }
+        .btn-primary { background-color: var(--cor-primaria); border: none; padding: 15px 30px; border-radius: 8px; width: 100%; font-weight: 600; text-transform: uppercase; margin-top: 10px; }
+        .alert { font-size: 0.9em; padding: 12px; border-radius: 5px; }
+        
+        /* Estilo do Checkbox */
+        .form-check-input:checked { background-color: var(--cor-primaria); border-color: var(--cor-primaria); }
+        .texto-lembrar { font-size: 0.9rem; color: var(--cor-texto); }
+        
+        /* Loader e Área Offline */
+        #loader-redirect { display: none; margin-bottom: 20px; }
+        #offline-area { display: none; margin-bottom: 20px; }
+    </style>
 </head>
-<body class="container mt-5">
 
-  <div class="row justify-content-center">
-    <div class="col-md-4">
-      <h2 class="text-center mb-4">Geramaster App</h2>
-      {% if erro %}
-      <div class="alert alert-danger text-center">{{ erro }}</div>
-      {% endif %}
-      <form method="POST">
-        <div class="mb-3">
-          <label for="usuario" class="form-label">Usuário</label>
-          <input type="text" name="usuario" id="usuario" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="senha" class="form-label">Senha</label>
-          <input type="password" name="senha" id="senha" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Entrar</button>
-      </form>
+<body>
+
+    <div id="loader-redirect" class="text-center">
+        <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;"></div>
+        <h4 class="mt-3 text-muted">Entrando automaticamente...</h4>
     </div>
-  </div>
-<link rel="manifest" href="/static/manifest.json">
-<link rel="icon" href="/static/icons/icon-192.png">
-<meta name="theme-color" content="#0d6efd">
 
-<!-- Service Worker -->
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/static/sw.js')
-      .then(reg => console.log('Service Worker registrado!', reg))
-      .catch(err => console.error('Erro ao registrar SW:', err));
-  }
+    <div class="container-login" id="area-login">
+        <div class="logo-container">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo Geramaster">
+        </div>
+        
+        <h1 class="login-title">Bem-vindo(a)</h1>
+        <p class="login-subtitle">Entre para acessar sua conta.</p>
+
+        {% if erro %}
+            <div class="alert alert-danger">{{ erro }}</div>
+        {% endif %}
+
+        <div id="offline-area">
+            <div class="alert alert-warning border-warning">
+                <i class="fas fa-wifi-slash mb-2" style="font-size: 2rem;"></i><br>
+                <strong>Sem Internet</strong><br>
+                Você pode acessar o sistema no modo offline.
+            </div>
+            <button onclick="entrarOffline()" class="btn btn-warning w-100 fw-bold shadow-sm">
+                <i class="fas fa-bolt"></i> ACESSAR AGORA
+            </button>
+        </div>
+
+        <form method="POST" id="form-login">
+            <div class="mb-3 text-start">
+                <label for="usuario" class="form-label fw-bold">Usuário</label>
+                <input type="text" name="usuario" id="usuario" class="form-control" required placeholder="Digite seu usuário">
+            </div>
+            <div class="mb-3 text-start">
+                <label for="senha" class="form-label fw-bold">Senha</label>
+                <input type="password" name="senha" id="senha" class="form-control" required placeholder="Digite sua senha">
+            </div>
+
+            <div class="mb-4 text-start">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
+                    <label class="form-check-label texto-lembrar" for="rememberMe">
+                        Manter conectado (Lembrar acesso)
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary shadow">ENTRAR</button>
+        </form>
+    </div>
+
+    <script>
+    // --- FUNÇÃO DE LIMPEZA NUCLEAR ---
+    async function executarLogoutCompleto() {
+        console.log("☢️ Executando Logout Nuclear...");
+        
+        // 1. Limpa LocalStorage e SessionStorage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // 2. Mata o Service Worker (Essencial)
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+                console.log("SW Desregistrado.");
+            }
+        }
+
+        // 3. Apaga TODOS os Caches
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+            console.log("Caches deletados.");
+        }
+
+        console.log("Limpeza concluída.");
+        
+        // 4. Limpa a URL e recarrega limpo para garantir que o Python processe o novo estado
+        // Remove os parâmetros logged_out e t da URL visualmente
+        window.history.replaceState({}, document.title, "/");
+    }
+
+    // --- INICIALIZAÇÃO ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLogout = urlParams.get('logged_out') === 'true';
+
+        // CENÁRIO A: ACABOU DE SAIR (LOGOUT)
+        if (isLogout) {
+            await executarLogoutCompleto();
+            // Não fazemos mais nada. Deixamos o usuário na tela de login limpa.
+            // O SW foi morto, então o próximo login será 100% via rede (Server).
+            return; 
+        }
+
+        // CENÁRIO B: ENTRANDO NO SITE (LOGIN/AUTO-LOGIN)
+        const formLogin = document.getElementById('form-login');
+        const areaOffline = document.getElementById('offline-area');
+        const loader = document.getElementById('loader-redirect');
+        const containerLogin = document.getElementById('area-login');
+        
+        // Re-registra o SW (pois o logout pode ter matado ele)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log("SW Re-registrado para novo acesso."))
+                .catch(err => console.error("Erro SW", err));
+        }
+
+        // Verifica Auto-Login (Só existe se não foi logout, pois o logout limpou o localStorage acima)
+        // Nota: Como limpamos o localStorage no logout, o 'auto_login_ativo' já era.
+        // O usuário terá que marcar a caixa de novo. Isso é segurança.
+        
+        // Mas se ele fechou o navegador e abriu de novo (sem logout), o storage ainda existe:
+        const autoLogin = localStorage.getItem('auto_login_ativo') === 'true';
+        const aparelhoConhecido = localStorage.getItem('aparelho_autorizado_offline');
+        
+        if (navigator.onLine) {
+            // ONLINE
+            if (autoLogin) {
+                containerLogin.style.display = 'none';
+                loader.style.display = 'block';
+                
+                // Adicionei um timestamp para evitar cache de redirecionamento
+                fetch("{{ url_for('menu') }}?t=" + Date.now())
+                    .then(response => {
+                        if (response.redirected && response.url.includes('/')) {
+                            throw new Error("Sessão inválida");
+                        }
+                        window.location.href = "{{ url_for('menu') }}";
+                    })
+                    .catch(() => {
+                        loader.style.display = 'none';
+                        containerLogin.style.display = 'block';
+                        formLogin.style.display = 'block';
+                    });
+            } else {
+                formLogin.style.display = 'block';
+                areaOffline.style.display = 'none';
+            }
+        } else {
+            // OFFLINE
+            if (aparelhoConhecido === 'true') {
+                formLogin.style.display = 'none';
+                areaOffline.style.display = 'block';
+            } else {
+                formLogin.style.display = 'block';
+                areaOffline.style.display = 'none';
+                const btn = formLogin.querySelector('button');
+                if(btn) { btn.disabled = true; btn.innerText = "Sem Internet (1º acesso requer rede)"; }
+            }
+        }
+    });
+
+    // --- SALVAR AO LOGAR ---
+    const form = document.getElementById('form-login');
+    const checkbox = document.getElementById('rememberMe');
+
+    if (form) {
+        form.addEventListener('submit', () => {
+            localStorage.setItem('aparelho_autorizado_offline', 'true');
+            if (checkbox && checkbox.checked) {
+                localStorage.setItem('auto_login_ativo', 'true');
+            } else {
+                localStorage.removeItem('auto_login_ativo');
+            }
+        });
+    }
+
+    function entrarOffline() {
+        window.location.href = "{{ url_for('menu') }}";
+    }
+    
+    window.addEventListener('offline', () => window.location.reload());
+    window.addEventListener('online', () => window.location.reload());
 </script>
-
 </body>
 </html>
