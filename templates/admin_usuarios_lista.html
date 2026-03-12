@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Equipe - Geramaster{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Gerenciar Equipe</h2>
+        <p class="text-muted">Controle de acesso ao sistema</p>
+    </div>
+    <a href="{{ url_for('admin_usuario_form') }}" class="btn btn-danger">
+        <i class="fas fa-user-plus"></i> Novo Usuário
+    </a>
+</div>
+
+<div class="card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Nome</th>
+                    <th>Login</th>
+                    <th>Tipo</th>
+                    <!-- <th>Bling ID</th> -->
+                    <th class="text-end pe-4">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td class="ps-4 fw-bold">{{ u['nome'] }}</td>
+                    <td>{{ u['usuario'] }}</td>
+                    <td>
+                        {% if u['tipo'] == 'admin' %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                            <span class="badge bg-info text-dark">Técnico</span>
+                        {% endif %}
+                    </td>
+                    <!-- <td>{{ u['bling_id'] or '-' }}</td> -->
+                    <td class="text-end pe-4">
+                        <a href="{{ url_for('admin_usuario_form', id=u['id']) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('admin_usuario_excluir', id=u['id']) }}" class="btn btn-sm btn-outline-danger" 
+                           onclick="return confirm('Tem certeza? Isso impedirá o acesso deste usuário.')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

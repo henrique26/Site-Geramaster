@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executar OS - Geramaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        :root { --cor-fundo: #F0F2F5; --cor-primaria: #e60000; --cor-texto: #212529; --cor-nav-bg: #f8f9fa; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; overflow-x: hidden; }
+        
+        /* Sidebar e Layout (Igual anterior) */
+        .sidebar { width: 280px; background-color: var(--cor-nav-bg); border-right: 1px solid #dee2e6; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: sticky; top: 0; z-index: 1000; }
+        .content { flex-grow: 1; padding: 20px; width: 100%; }
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: none; border: none; font-size: 1.5rem; }
+        @media (max-width: 768px) { .sidebar { position: fixed; left: -280px; transition: left 0.3s; } .sidebar.open { left: 0; } .menu-toggle { display: block; } .content { padding-top: 60px; } }
+
+        /* Estilos Específicos */
+        .checklist-container { display: none; }
+        .checklist-active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Estilo da Assinatura */
+        .wrapper-assinatura { border: 2px dashed #ccc; border-radius: 8px; background: white; position: relative; height: 200px; width: 100%; touch-action: none; }
+        canvas { width: 100%; height: 100%; }
+
+        /* Estilo das Fotos */
+        .preview-container { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0; }
+        .preview-item { position: relative; display: inline-block; }
+        .preview-item img { height: 80px; width: 80px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+        .btn-remove-foto { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* CSS NOVO PARA MOBILE */
+    @media (max-width: 768px) {
+        /* Aumenta o tamanho dos inputs para facilitar o toque */
+        .form-control, .form-select, .btn {
+            min-height: 48px; /* Tamanho amigável para o dedo */
+            font-size: 16px; /* Evita zoom automático no iPhone */
+        }
+        
+        /* Barra Fixa no Rodapé */
+        .mobile-sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            z-index: 9999;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        /* Espaço extra no fim da página para o conteúdo não ficar escondido atrás da barra */
+        .content {
+            padding-bottom: 100px !important;
+        }
+    }
+    
+    /* Esconde a barra no computador */
+    @media (min-width: 769px) {
+        .mobile-sticky-footer {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // Aponta para o arquivo que criamos no Passo 1
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((reg) => {
+                    console.log('Service Worker registrado com sucesso. Escopo:', reg.scope);
+                })
+                .catch((err) => {
+                    console.log('Falha ao registrar Service Worker:', err);
+                });
+        });
+    }
+</script>
+</head>
+<body>
+
+    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <img src="/static/Geramaster logo Preto fundo transparente.png" alt="Logo" style="max-width: 180px;">
+        </div>
+        <nav class="nav flex-column gap-2">
+            <a href="{{ url_for('os_painel') }}" class="btn btn-outline-secondary text-start border-0">
+                <i class="fas fa-arrow-left me-2"></i> Voltar ao Painel
+            </a>
+            <hr>
+            <div class="alert alert-light border small mb-0">
+                <strong>OS #{{ os.id_os }}</strong><br>
+                {{ os.data_hora_abertura | data_brasil }}
+            </div>
+        </nav>
+    </div>
+
+    <div class="content container-fluid">
+        
+        <div id="alertaSync" class="alert alert-warning shadow-sm mb-4" style="display: none;">
+            <h4 class="alert-heading"><i class="fas fa-cloud-upload-alt"></i> Dados Aguardando Envio!</h4>
+            <p>Você já finalizou esta OS offline, mas ela ainda não subiu para o sistema.</p>
+            <hr>
+            <div class="d-flex justify-content-between align-items-center">
+                <span>Conecte-se à internet e clique ao lado:</span>
+                <button onclick="forcarSincronizacao()" class="btn btn-warning fw-bold border-dark">
+                    <i class="fas fa-sync fa-spin me-2" id="iconSync"></i> ENVIAR AGORA
+                </button>
+            </div>
+        </div>
+
+    <div class="content container-fluid">
+        
+        <div class="card shadow-sm mb-3 border-0">
+            <div class="card-body p-2">
+                <button class="btn btn-light w-100 d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#dadosCliente">
+                    <span><i class="fas fa-user-circle me-2"></i> <strong>{{ os.nome_cliente }}</strong></span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="collapse mt-2" id="dadosCliente">
+                    <div class="card card-body bg-light border-0">
+                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> {{ os.endereco or 'Endereço não informado' }}</p>
+                        {% if os.endereco %}
+                        <div class="row g-2 mt-2">
+                            <div class="col-6"><a href="https://waze.com/ul?q={{ os.endereco }}" target="_blank" class="btn btn-info text-white w-100"><i class="fab fa-waze"></i> Waze</a></div>
+                            <div class="col-6"><a href="https://maps.google.com/?q={{ os.endereco }}" target="_blank" class="btn btn-success w-100"><i class="fas fa-map-marked-alt"></i> Maps</a></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm border-0 bg-white">
+            <div class="card-body text-center">
+                {% if not os.data_hora_inicio %}
+                    <a href="{{ url_for('iniciar_os', os_id=os.id_os) }}" id="btnIniciarOS" class="btn btn-primary btn-lg w-100 py-3 shadow">
+                        <i class="fas fa-play me-2"></i> INICIAR SERVIÇO
+                    </a>
+                {% else %}
+                    <div class="alert alert-success py-2 mb-0 d-flex justify-content-center align-items-center gap-2">
+                        <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                        <strong>Em Execução</strong> • Início: <span id="dataHoraInicio" data-utc="{{ os.data_hora_inicio }}">--:--</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <form action="{{ url_for('finalizar_os', os_id=os.id_os) }}" method="POST" enctype="multipart/form-data" id="formOS">
+
+            <div class="card mb-3 shadow-sm border">
+                <div class="card-body bg-light">
+                    <label class="form-label fw-bold small text-muted text-uppercase mb-1">Selecione o equipamento:</label>
+                    <select id="seletorEquipamento" class="form-select form-select-lg fw-bold border-secondary" onchange="mostrarChecklist()">
+                        <option value="" disabled selected>Clique para selecionar...</option>
+                        {% for item in lista_execucao %}
+                            <option value="eq_{{ item.item_id }}">
+                                {{ item.nome_equipamento }} ({{ item.tipo_servico|upper|replace('_', ' ') }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {% for item in lista_execucao %}
+            <div id="eq_{{ item.item_id }}" class="checklist-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold">{{ item.nome_equipamento }}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalInfo{{ item.item_id }}">
+                        <i class="fas fa-info-circle"></i> Info
+                    </button>
+                </div>
+
+                <div class="modal fade" id="modalInfo{{ item.item_id }}" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title">Detalhes</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul class="list-group list-group-flush"><li class="list-group-item"><strong>Série:</strong> {{ item.numero_serie_principal or '-' }}</li><li class="list-group-item"><strong>KVA:</strong> {{ item.potencia_kva or '-' }}</li></ul></div></div></div></div>
+
+                {% for pergunta in item.checklist %}
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-body p-3">
+                        <span class="fw-bold d-block mb-2 text-dark">{{ loop.index }}. {{ pergunta.label }}</span>
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <input type="text" name="resposta_{{ item.item_id }}_{{ pergunta.id }}" class="form-control" placeholder="Resposta">
+                            </div>
+                            <div class="col-4">
+                                <label class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center h-100">
+                                    <i class="fas fa-camera fa-lg"></i>
+                                    
+                                    <input type="file" 
+                                           name="foto_{{ item.item_id }}_{{ pergunta.id }}" 
+                                           class="d-none input-foto" 
+                                           accept="image/*" 
+                                           multiple 
+                                           onchange="previewImage(this, 'prev_{{ item.item_id }}_{{ pergunta.id }}')">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="preview-container mt-2"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <hr class="my-4">
+            
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Finalização</h5>
+                    <div class="mb-3">
+                        <label class="fw-bold">Relatório Técnico:</label>
+                        <textarea name="servicos_executados" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Observações Gerais:</label>
+                        <textarea name="obs_geral" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="mb-4 p-3 border rounded bg-white border-primary shadow-sm">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="fas fa-robot"></i> Orçamento Inteligente (Peças e Kits)
+                    </h6>
+                    
+                    <div class="form-group">
+                        <label for="texto_pendencias" class="form-label text-muted small">
+                            Descreva o serviço, os kits necessários ou os códigos (SKU) das peças. 
+                            A Inteligência Artificial vai ler este texto e montar o orçamento no Bling.
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="texto_pendencias" 
+                            name="texto_pendencias" 
+                            rows="5" 
+                            placeholder="Exemplo: Necessário realizar a troca de óleo do motor Scania DC13. Trocar também o filtro (LF777)."
+                        ></textarea>
+                    </div>
+                    <div class="mt-2 text-secondary" style="font-size: 0.85rem;">
+                        <i class="fas fa-info-circle"></i> Todo o texto digitado aqui será salvo nas observações da proposta para conferência do comercial.
+                    </div>
+                </div>
+
+                    <div class="row">
+                
+                        <div class="col-md-6 mb-4">
+                            <label class="fw-bold text-primary mb-1">Técnico Responsável:</label>
+                            
+                            <input type="text" name="nome_assinatura_tecnico" class="form-control mb-2" 
+                                placeholder="Nome legível do técnico" 
+                                value="{{ session.get('nome', '') }}" required>
+                            
+                            <div class="wrapper-assinatura border rounded bg-white shadow-sm">
+                                <canvas id="sig-tecnico"></canvas>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-light mt-1 w-100 border text-muted" onclick="limparSig('tecnico')">
+                                <i class="fas fa-eraser"></i> Limpar Desenho
+                            </button>
+                            <input type="hidden" name="assinatura_tecnico_base64" id="sig-tecnico-val">
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label class="fw-bold text-success mb-1">Responsável pelo Cliente:</label>
+                            
+                            <input type="text" name="nome_assinatura_cliente" class="form-control mb-2" 
+                                placeholder="Nome do cliente" required>
+                            
+                            <div class="wrapper-assinatura border rounded bg-white shadow-sm">
+                                <canvas id="sig-cliente"></canvas>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-light mt-1 w-100 border text-muted" onclick="limparSig('cliente')">
+                                <i class="fas fa-eraser"></i> Limpar Desenho
+                            </button>
+                            <input type="hidden" name="assinatura_cliente_base64" id="sig-cliente-val">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                    <div class="d-none d-md-block mt-4">
+                        <button type="submit" class="btn btn-success btn-lg w-100 py-4 fw-bold shadow" onclick="prepararEnvio(event)">
+                            FINALIZAR ORDEM DE SERVIÇO
+                        </button>
+                    </div>
+
+                    <div class="mobile-sticky-footer">
+                        <button type="submit" class="btn btn-success w-100 fw-bold shadow" onclick="prepararEnvio(event)">
+                            <i class="fas fa-check-double me-2"></i> FINALIZAR OS
+                        </button>
+                    </div>
+                    
+                </form>
+            </div>
+        
+        </form>
+    </div>
+
+</div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="/static/offline_manager.js?v=14"></script>
+
+    <script>
+        // ==========================================
+        // 1. LÓGICA VISUAL E NAVEGAÇÃO
+        // ==========================================
+        
+        // Sidebar Toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        }
+
+        // Ajuste de Horário (UTC -> Local)
+        function ajustarHorario(elementoId, formato='completo') {
+            const el = document.getElementById(elementoId);
+            if (!el) return;
+            const dataStr = el.getAttribute('data-utc');
+            if (!dataStr || dataStr === 'None') return;
+            
+            const data = new Date(dataStr.includes('Z') ? dataStr : dataStr + 'Z'); 
+            
+            const opcoes = formato === 'hora' 
+                ? { hour: '2-digit', minute: '2-digit' } 
+                : { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
+            
+            el.innerText = data.toLocaleString('pt-BR', opcoes);
+        }
+        ajustarHorario('dataHoraAbertura');
+        ajustarHorario('dataHoraInicio', 'completo');
+
+        // Mostrar Checklist do Equipamento Selecionado
+        function mostrarChecklist() {
+            document.querySelectorAll('.checklist-container').forEach(div => div.classList.remove('checklist-active'));
+            let id = document.getElementById('seletorEquipamento').value;
+            if (id) document.getElementById(id).classList.add('checklist-active');
+        }
+
+
+        // ==========================================
+        // 2. ASSINATURAS (Signature Pad)
+        // ==========================================
+        var canvasTec = document.getElementById('sig-tecnico');
+        var padTec = canvasTec ? new SignaturePad(canvasTec, { backgroundColor: 'rgb(255, 255, 255)' }) : null;
+        
+        var canvasCli = document.getElementById('sig-cliente');
+        var padCli = canvasCli ? new SignaturePad(canvasCli, { backgroundColor: 'rgb(255, 255, 255)' }) : null;
+
+        function resizeCanvas() {
+            if (!canvasTec || !canvasCli) return;
+            [canvasTec, canvasCli].forEach(c => {
+                var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                c.width = c.offsetWidth * ratio;
+                c.height = c.offsetHeight * ratio;
+                c.getContext("2d").scale(ratio, ratio);
+            });
+        }
+        window.addEventListener("resize", resizeCanvas);
+        setTimeout(resizeCanvas, 500); // Delay pequeno para garantir renderização
+
+        function limparSig(tipo) {
+            if(tipo === 'tecnico' && padTec) padTec.clear();
+            if(tipo === 'cliente' && padCli) padCli.clear();
+        }
+
+
+        // ==========================================
+        // 3. FOTOS COM PREVIEW E EXCLUSÃO
+        // ==========================================
+        document.querySelectorAll('.input-foto').forEach(input => {
+            input.addEventListener('change', function() {
+                const container = this.closest('.card-body').querySelector('.preview-container');
+                const dt = new DataTransfer();
+                // Adiciona arquivos novos
+                for (let file of this.files) dt.items.add(file);
+                this.files = dt.files; 
+                renderizarPreview(this, container, dt);
+            });
+        });
+
+        function renderizarPreview(inputElement, container, dataTransfer) {
+            container.innerHTML = '';
+            Array.from(dataTransfer.files).forEach((file, index) => {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let div = document.createElement('div');
+                    div.className = 'preview-item'; 
+                    div.style.position = 'relative';
+                    div.style.display = 'inline-block';
+                    div.style.marginRight = '10px';
+
+                    div.innerHTML = `
+                        <img src="${e.target.result}" style="height:80px; width:80px; object-fit:cover; border-radius:5px; border:1px solid #ccc;">
+                        <button type="button" class="btn-remove-foto" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; width:20px; height:20px; border:none; cursor:pointer; font-size:12px; line-height:1;">X</button>
+                    `;
+
+                    div.querySelector('button').onclick = function() {
+                        dataTransfer.items.remove(index);
+                        inputElement.files = dataTransfer.files;
+                        renderizarPreview(inputElement, container, dataTransfer);
+                    };
+                    container.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+
+
+        // ==========================================
+        // 4. LÓGICA OFFLINE E ENVIO (SINCRONIZAÇÃO)
+        // ==========================================
+        
+        // Variável única para o formulário
+        const formOS = document.getElementById('formOS');
+
+        // ==========================================
+        // MODO LEITURA V4 (Ajuste do Visual e Checklist)
+        // ==========================================
+        async function verificarEPreencherModoLeitura(osId) {
+            try {
+                const db = await openOfflineDB(); 
+                const tx = db.transaction(['fila_requisicoes'], 'readonly');
+                const store = tx.objectStore('fila_requisicoes');
+                
+                const pacotes = await new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+
+                const pacotesDestaOS = pacotes.filter(p => p.url && p.url.includes(String(osId)));
+
+                // 1. O Botão Iniciar
+                const pacoteInicio = pacotesDestaOS.find(p => {
+                    if (Array.isArray(p.dados)) return p.dados.some(d => d[0] === 'acao' && d[1] === 'iniciar_offline');
+                    return p.dados && p.dados['acao'] === 'iniciar_offline';
+                });
+                
+                if (pacoteInicio) {
+                    const btnIniciar = document.getElementById('btnIniciarOS');
+                    if (btnIniciar) {
+                        btnIniciar.outerHTML = `
+                            <div class="alert alert-success py-2 mb-0 d-flex justify-content-center align-items-center gap-2">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Iniciado Offline</strong>
+                            </div>
+                        `;
+                    }
+                }
+
+                // 2. Os Dados e Fotos
+                const pacoteFinalizacao = pacotesDestaOS.find(p => {
+                    if (Array.isArray(p.dados)) return p.dados.some(d => d[0] === 'servicos_executados');
+                    return p.dados && ('servicos_executados' in p.dados);
+                });
+
+                if (pacoteFinalizacao) {
+                    const painelAviso = document.createElement('div');
+                    painelAviso.className = "alert alert-info text-center shadow-sm fw-bold border-info sticky-top mt-2 mb-3";
+                    painelAviso.innerHTML = "<i class='fas fa-eye'></i> MODO LEITURA OFFLINE: OS salva no aparelho. Apenas visualização.";
+                    
+                    const contentDiv = document.querySelector('.content');
+                    if(contentDiv) contentDiv.prepend(painelAviso);
+
+                    // 👇 A MÁGICA DA CHECKLIST AQUI 👇
+                    // Esconde a caixa de selecionar equipamento
+                    const seletor = document.getElementById('seletorEquipamento');
+                    if (seletor && seletor.closest('.card')) seletor.closest('.card').style.display = 'none';
+
+                    // Força TODAS as abas de checklist a ficarem abertas e visíveis
+                    document.querySelectorAll('.checklist-container').forEach(div => {
+                        div.style.display = 'block';
+                        div.style.opacity = '1';
+                        div.classList.add('checklist-active');
+                    });
+                    // 👆 ======================= 👆
+
+                    // Trava botões e inputs
+                    document.querySelectorAll('input, textarea, select, button[type="submit"]').forEach(el => {
+                        el.disabled = true;
+                        el.style.backgroundColor = "#e9ecef"; 
+                    });
+
+                    const dadosExtraidos = Array.isArray(pacoteFinalizacao.dados) 
+                        ? pacoteFinalizacao.dados 
+                        : Object.entries(pacoteFinalizacao.dados);
+
+                    dadosExtraidos.forEach(([key, value]) => {
+                        const campo = document.querySelector(`[name="${key}"]`);
+                        
+                        // Textos
+                        if (campo && typeof value === 'string') {
+                            campo.value = value;
+                        }
+                        
+                        // Assinaturas
+                        if (key === 'assinatura_tecnico_base64' && value) {
+                            setTimeout(() => { if(padTec) padTec.fromDataURL(value); }, 400);
+                        }
+                        if (key === 'assinatura_cliente_base64' && value) {
+                            setTimeout(() => { if(padCli) padCli.fromDataURL(value); }, 400);
+                        }
+                        
+                        // Fotos
+                        try {
+                            if (campo && value && (value instanceof File || value instanceof Blob) && value.size > 0) {
+                                const container = campo.closest('.card-body').querySelector('.preview-container');
+                                if (container) {
+                                    const imgUrl = URL.createObjectURL(value);
+                                    container.innerHTML += `
+                                        <div class="preview-item" style="display:inline-block; margin-right:5px; position:relative;">
+                                            <img src="${imgUrl}" style="height:80px; width:80px; object-fit:cover; border-radius:5px; border:2px solid #0dcaf0;">
+                                            <span class="badge bg-dark position-absolute bottom-0 start-50 translate-middle-x mb-1" style="font-size:0.5rem; color:white;">COFRE</span>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        } catch (errFoto) {
+                            console.warn("Falha foto:", errFoto);
+                        }
+                    });
+                    
+                    if(padTec) padTec.off();
+                    if(padCli) padCli.off();
+                    
+                    return true; 
+                }
+                
+                return false;
+            } catch (e) {
+                console.error("🚨 Erro CRÍTICO no modo leitura:", e);
+                return false;
+            }
+        }
+
+        // -- A. Verificação ao Abrir a Página --
+        document.addEventListener('DOMContentLoaded', async () => {
+            const osId = "{{ os.id_os }}"; 
+
+            // 👇 CHAMA O MODO LEITURA AQUI 👇
+            const emModoLeitura = await verificarEPreencherModoLeitura(osId);
+            
+            // Se estiver em modo leitura, a gente não roda a armadilha de interceptar o Iniciar de novo
+            if (emModoLeitura) return;
+            
+            // Verifica se offline-manager foi carregado corretamente
+            if (typeof verificarOSPendente === 'function') {
+                const estaPendente = await verificarOSPendente(osId);
+
+                if (estaPendente) {
+                    // Bloqueia e avisa
+                    if(formOS) {
+                        formOS.style.opacity = '0.5';
+                        formOS.style.pointerEvents = 'none';
+                    }
+                    const alerta = document.getElementById('alertaSync');
+                    if(alerta) alerta.style.display = 'block';
+                    
+                    // Auto-sync se tiver internet
+                    if (navigator.onLine) {
+                        console.log("Internet detectada. Tentando auto-sincronização...");
+                        forcarSincronizacao();
+                    }
+                }
+            }
+            // 👇 COMEÇA AQUI: COLE ESTE BLOCO NOVO 👇
+            const btnIniciar = document.getElementById('btnIniciarOS');
+            
+            if (btnIniciar) {
+                btnIniciar.addEventListener('click', async function(event) {
+                    if (!navigator.onLine) {
+                        event.preventDefault(); // O Escudo! 
+                        const urlDestino = this.getAttribute('href');
+                        
+                        try {
+                            // Pega a hora exata do celular!
+                            // Pega a data e hora exata do celular do técnico no momento do clique
+                            const dataHoraExata = new Date().toISOString(); 
+
+                            await salvarNoCofre(urlDestino, [
+                                ['acao', 'iniciar_offline'],
+                                ['data_hora_offline', dataHoraExata] // Coloca o carimbo dentro do pacote!
+                            ]);
+                            
+                            this.outerHTML = `
+                                <div class="alert alert-success py-2 mb-0 d-flex justify-content-center align-items-center gap-2">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <strong>Iniciado Offline</strong>
+                                </div>
+                            `;
+                            alert('⏳ Serviço iniciado no modo offline! Pode preencher as fotos e o laudo tranquilamente.');
+                        } catch (erro) {
+                            alert('Erro ao registrar início offline: ' + erro);
+                        }
+                    }
+                });
+            }
+            // 👆 TERMINA AQUI: FIM DO BLOCO NOVO 👆
+        });
+
+        // -- B. Função do Botão "ENVIAR AGORA" --
+        async function forcarSincronizacao() {
+            const btn = document.querySelector('#alertaSync button');
+            const icon = document.getElementById('iconSync');
+            
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = 'Enviando...';
+            }
+            if(icon) icon.style.display = 'inline-block';
+
+            if (!navigator.onLine) {
+                alert("Sem internet! Conecte-se e tente novamente.");
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'TENTAR NOVAMENTE';
+                }
+                return;
+            }
+
+            try {
+                await sincronizarPendentes(); // Do offline-manager.js
+
+                const aindaPendente = await verificarOSPendente("{{ os.id_os }}");
+                if (!aindaPendente) {
+                    alert("Sincronizado com sucesso!");
+                    window.location.reload();
+                } else {
+                    alert("Erro ao sincronizar. Tente novamente.");
+                    if(btn) btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro na sincronização.");
+                if(btn) btn.disabled = false;
+            }
+        }
+
+        // -- C. Interceptação do Envio (Submit) --
+        if (formOS) {
+            formOS.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                // 1. Validação e Captura das Assinaturas
+                if (padTec && padCli) {
+                    if (padTec.isEmpty() || padCli.isEmpty()) {
+                        alert("As assinaturas do técnico e do cliente são obrigatórias!");
+                        return;
+                    }
+                    document.getElementById('sig-tecnico-val').value = padTec.toDataURL();
+                    document.getElementById('sig-cliente-val').value = padCli.toDataURL();
+                }
+
+                const formData = new FormData(this);
+                const osId = "{{ os.id_os }}";
+                const urlDestino = this.getAttribute('action') || window.location.href;
+                
+                const btnSubmit = this.querySelector('button[type="submit"]');
+                if(btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processando...';
+                }
+
+                // DECISÃO: ONLINE OU OFFLINE?
+                if (navigator.onLine) {
+                    try {
+                        const response = await fetch(urlDestino, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.redirected || response.ok) {
+                            localStorage.removeItem(`rascunho_os_${osId}`);
+                            window.location.href = response.redirected ? response.url : "{{ url_for('os_painel') }}"; 
+                        } else {
+                            throw new Error("Erro no servidor");
+                        }
+                    } catch (erro) {
+                        console.warn("Falha no envio online. Salvando offline...", erro);
+                        await salvarOSModoOffline(urlDestino, formData, osId);
+                    }
+                } else {
+                    await salvarOSModoOffline(urlDestino, formData, osId);
+                }
+            });
+        }
+
+        // -- D. Função auxiliar para salvar offline no nosso Cofre --
+        async function salvarOSModoOffline(url, formData, id) {
+            try {
+                alert('⏳ Trancando dados, fotos e assinaturas no cofre do celular... Aguarde!');
+                
+                // Transforma o FormData em Array
+                let arrayDadosComFotos = Array.from(formData.entries()); 
+                
+                // 🔥 A BLINDAGEM PARA CELULARES (iOS e Android) 🔥
+                // Tira os arquivos vazios (0 bytes) ANTES de tentar salvar no banco de dados do aparelho
+                arrayDadosComFotos = arrayDadosComFotos.filter(([key, value]) => {
+                    if ((value instanceof File || value instanceof Blob) && value.size === 0) {
+                        return false; // Joga o fantasma fora e não salva no cofre
+                    }
+                    return true; // Guarda textos, senhas, e fotos de verdade
+                });
+                
+                // Chama a função do offline_manager.js com os dados limpos
+                await salvarNoCofre(url, arrayDadosComFotos); 
+
+                alert("⚠️ SEM INTERNET! \n\nA Ordem de Serviço, as fotos e as assinaturas foram salvas no aparelho. \nSincronize quando o sinal voltar.");
+                window.location.href = "{{ url_for('os_painel') }}";
+                
+            } catch (e) {
+                // Melhorei o aviso de erro para ele mostrar exatamente o que o celular reclamar
+                alert("Erro ao salvar no dispositivo. Tente novamente: " + e);
+                const btn = document.querySelector('button[type="submit"]');
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-double me-2"></i> FINALIZAR OS';
+                }
+            }
+        }
+        // ==========================================
+    // 5. SISTEMA DE RASCUNHO (SALVA AO DIGITAR)
+    // ==========================================
+    
+    // Cria uma chave única para esta OS específica
+    const DRAFT_KEY = `rascunho_os_{{ os.id_os }}`;
+
+    // Função para restaurar dados salvos
+    function carregarRascunho() {
+        const salvo = localStorage.getItem(DRAFT_KEY);
+        if (salvo) {
+            try {
+                const dados = JSON.parse(salvo);
+                console.log("🔄 Restaurando rascunho salvo...");
+
+                // Preenche Inputs de Texto, Textareas e Selects
+                document.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+                    if (el.name && dados[el.name] !== undefined) {
+                        el.value = dados[el.name];
+                    }
+                });
+
+            } catch (e) {
+                console.error("Erro ao restaurar rascunho:", e);
+            }
+        }
+    }
+
+    // Função para salvar o estado atual
+    function salvarEstadoAtual() {
+        const dados = {};
+        
+        // Captura valores de texto e selects
+        document.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+            if (el.name) {
+                dados[el.name] = el.value;
+            }
+        });
+
+        // Salva no navegador
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(dados));
+    }
+
+    // Ativa o salvamento automático
+    // O evento 'input' pega digitação, 'change' pega seleção de dropdown
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Tenta carregar o que já existe
+        carregarRascunho();
+
+        // 2. Adiciona "ouvintes" em todos os campos do formulário
+        const formulario = document.getElementById('formOS');
+        if (formulario) {
+            formulario.addEventListener('input', salvarEstadoAtual);
+            formulario.addEventListener('change', salvarEstadoAtual);
+        }
+    });
+
+    // Importante: Adicione essa linha dentro do evento 'submit' que já existe no seu código,
+    // logo após o envio ser bem-sucedido (dentro do if response.ok ou redirecionamento),
+    // para limpar o rascunho quando a OS for finalizada de verdade.
+    // localStorage.removeItem(DRAFT_KEY);
+    </script>
+
+<div id="cortinaCarregamento" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; backdrop-filter: blur(3px);">
+    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem; border-width: 0.4rem;" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <h5 class="mt-4 fw-bold text-primary" style="letter-spacing: 1px;">CARREGANDO...</h5>
+    <p class="text-muted small">Aguarde um momento</p>
+</div>
+
+<script>
+    // 1. Esconde a cortina quando a página terminar de carregar TUDO (fotos, scripts, etc)
+    window.addEventListener('load', function() {
+        const cortina = document.getElementById('cortinaCarregamento');
+        if (cortina) {
+            cortina.style.opacity = '0';
+            setTimeout(() => { cortina.style.display = 'none'; }, 300); // Espera a animação de sumir
+        }
+    });
+
+    // 2. Mostra a cortina quando o técnico clicar em algum link para trocar de página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Ignora cliques que não carregam páginas novas (como #, links vazios, ou abrir em nova aba)
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || this.target === '_blank') {
+                    return;
+                }
+                
+                // Se a internet estiver desligada e for o botão de iniciar offline, não mostra a cortina infinita
+                if (!navigator.onLine && this.id === 'btnIniciarOS') {
+                    return; 
+                }
+
+                const cortina = document.getElementById('cortinaCarregamento');
+                if (cortina) {
+                    cortina.style.display = 'flex';
+                    // Pequeno delay para a tela não piscar em cliques muito rápidos
+                    setTimeout(() => { cortina.style.opacity = '1'; }, 10); 
+                }
+            });
+        });
+
+        // 3. Mostra a cortina quando enviar um formulário online
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Se estiver offline, o nosso cofre já cuida dos alertas e envios silenciosos
+                if (navigator.onLine && !e.defaultPrevented) {
+                    const cortina = document.getElementById('cortinaCarregamento');
+                    if (cortina) {
+                        cortina.style.display = 'flex';
+                        setTimeout(() => { cortina.style.opacity = '1'; }, 10);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
